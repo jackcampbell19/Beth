@@ -48,7 +48,6 @@ class Camera:
                                                      (self.width, self.height),
                                                      cv2.CV_16SC2)
         undistorted_img = cv2.remap(frame, m1, m2, interpolation=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
-        Log.info('Returning undistorted image.')
         return undistorted_img
 
     def capture_frame(self, r=5, correct_distortion=True):
@@ -68,7 +67,6 @@ class Camera:
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         if correct_distortion:
             frame = self.correct_distortion(frame)
-        Log.info('Returning frame.')
         return frame
 
     def take_snapshot(self):
@@ -79,12 +77,11 @@ class Camera:
         Log.info('Taking snapshot from camera.')
         frame = self.capture_frame()
         markers = Camera.extract_markers(frame)
-        Log.info('Scaling markers for real world distances.')
+        Log.info(f"Scaling snapshot markers for real world distances using scalar {self.mm_per_pixel}.")
         for key in markers:
             markers[key].scale(self.mm_per_pixel)
         frame_center = np.array([self.width / 2, self.height / 2])
         frame_center *= self.mm_per_pixel
-        Log.info('Returning snapshot.')
         return markers, frame_center
 
     def calibrate_observed_distances(self):
@@ -102,13 +99,13 @@ class Camera:
         # Calculate the pixel distance between the two markers in the raw image
         observed_distance = np.linalg.norm(markers[end_fid].center - markers[start_fid].center)
         # Calculate the physical distance of a pixel
-        Log.info('Camera calibration complete.')
         self.mm_per_pixel = fid_distance / observed_distance
 
     @staticmethod
-    def extract_markers(frame, marker_type=aruco.DICT_4X4_1000):
+    def extract_markers(frame, marker_type=aruco.DICT_4X4_1000, save_img=False):
         """
         Extracts all of the markers in given frame and returns a map of fid to marker.
+        :param save_img:
         :param frame:
         :param marker_type:
         :return:
@@ -117,11 +114,12 @@ class Camera:
         aruco_dict = aruco.Dictionary_get(marker_type)
         parameters = aruco.DetectorParameters_create()
         corners, ids, _ = aruco.detectMarkers(frame, aruco_dict, parameters=parameters)
-        marked_frame = aruco.drawDetectedMarkers(frame, corners, ids)
-        data = Image.fromarray(marked_frame)
-        output_frame = f"runtime/marked-frame-{int(time.time())}.png"
-        Log.info(f"Saving marked frame to {output_frame}")
-        data.save(output_frame)
+        if save_img:
+            marked_frame = aruco.drawDetectedMarkers(frame, corners, ids)
+            output_frame = f"runtime/marked-frame-{int(time.time())}.png"
+            Log.info(f"Saving marked frame to {output_frame}")
+            data = Image.fromarray(marked_frame)
+            data.save(output_frame)
         markers = {}
         for x in range(len(corners)):
             fid = str(ids[x][0])

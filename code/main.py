@@ -66,6 +66,6 @@ if __name__ == "__main__":
             continue
         # Calculate the vector between the current position and the target markers position
         movement_vector = markers[target_fid].center - center
-        print(movement_vector)
+        Log.debug(movement_vector)
         # Wait before moving again
         time.sleep(3)
