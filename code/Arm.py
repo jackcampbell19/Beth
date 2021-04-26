@@ -7,7 +7,6 @@ import RPi.GPIO as GPIO
 class Arm:
 
     def __init__(self, x_size, y_size, x_stp, y_stp, x_dir, y_dir):
-        GPIO.cleanup()
         self.x_size = x_size
         self.y_size = y_size
         self.current_position = np.array([0, 0])
@@ -17,6 +16,9 @@ class Arm:
             mode_pins=(21, 21, 21),
             motor_type="DRV8825"
         )
+
+    def cleanup(self):
+        GPIO.cleanup()
 
     def calibrate(self):
         pass

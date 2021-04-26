@@ -50,9 +50,10 @@ Execute main function.
 """
 
 if __name__ == "__main__":
-    while True:
+    for x in range(5):
         arm.x_stepper.motor_go(steps=200)
         time.sleep(2)
+    arm.cleanup()
     # Perform mechanical calibration
     arm.calibrate()
     # Perform camera distance calibration
