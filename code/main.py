@@ -46,16 +46,14 @@ Execute main function.
 
 if __name__ == "__main__":
     # Perform mechanical calibration
-    Log.info('Calibrating mechanical components.')
     arm.calibrate()
     # Perform camera distance calibration
-    Log.info('Calibrating camera.')
     while True:
         try:
             camera.calibrate_observed_distances()
             break
         except CalibrationMarkerNotVisible:
-            Log.warn('Calibration marker is not visible. Ensure it is in the frame of the camera.')
+            continue
     # Temporary sequence - move the arm to the given marker
     target_fid = "5"
     while True:

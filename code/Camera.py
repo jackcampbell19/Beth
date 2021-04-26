@@ -40,6 +40,7 @@ class Camera:
         :param frame: The frame to correct.
         :return: The corrected frame.
         """
+        Log.info('Correcting camera distortion on frame.')
         m1, m2 = cv2.fisheye.initUndistortRectifyMap(self.k,
                                                      self.d,
                                                      np.eye(3),
@@ -47,23 +48,27 @@ class Camera:
                                                      (self.width, self.height),
                                                      cv2.CV_16SC2)
         undistorted_img = cv2.remap(frame, m1, m2, interpolation=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
+        Log.info('Returning undistorted image.')
         return undistorted_img
 
-    def capture_frame(self, r=10, correct_distortion=True):
+    def capture_frame(self, r=5, correct_distortion=True):
         """
         Captures a frame from the camera.
         :param correct_distortion: Tell the function if it should correct for distortion.
         :param r: Number of initial frames to read to allow for calibration.
         :return: np array of pixel data
         """
+        Log.info('Capturing frame from camera.')
         for _ in range(r):
             self.camera.read()
         success, frame = self.camera.read()
         if not success:
-            raise CameraError('Frame could not be read.')
+            Log.error('Frame could not be read from camera.')
+            raise CameraError()
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         if correct_distortion:
             frame = self.correct_distortion(frame)
+        Log.info('Returning frame.')
         return frame
 
     def take_snapshot(self):
@@ -71,27 +76,33 @@ class Camera:
         Returns a map of all markers present in the current frame adjusted with the distance calibration.
         :return: [Marker...]
         """
+        Log.info('Taking snapshot from camera.')
         frame = self.capture_frame()
         markers = Camera.extract_markers(frame)
+        Log.info('Scaling markers for real world distances.')
         for key in markers:
             markers[key].scale(self.mm_per_pixel)
         frame_center = np.array([self.width / 2, self.height / 2])
         frame_center *= self.mm_per_pixel
+        Log.info('Returning snapshot.')
         return markers, frame_center
 
     def calibrate_observed_distances(self):
         """
-        Uses 4 markers arranged in a square to calculate the real world distances being captured by the camera.
+        Uses markers with know distance to calculate the real world distances being captured by the camera.
         """
         # Get all the markers
+        Log.info('Calibrating camera using reference markers.')
         frame = self.capture_frame()
         markers = Camera.extract_markers(frame)
         start_fid, end_fid, fid_distance = self.distance_calibration
         if start_fid not in markers or end_fid not in markers:
+            Log.warn('Calibration marker is not visible. Ensure it is in the frame of the camera.')
             raise CalibrationMarkerNotVisible()
         # Calculate the pixel distance between the two markers in the raw image
         observed_distance = np.linalg.norm(markers[end_fid].center - markers[start_fid].center)
         # Calculate the physical distance of a pixel
+        Log.info('Camera calibration complete.')
         self.mm_per_pixel = fid_distance / observed_distance
 
     @staticmethod
@@ -102,12 +113,15 @@ class Camera:
         :param marker_type:
         :return:
         """
+        Log.info('Extracting markers from camera frame.')
         aruco_dict = aruco.Dictionary_get(marker_type)
         parameters = aruco.DetectorParameters_create()
         corners, ids, _ = aruco.detectMarkers(frame, aruco_dict, parameters=parameters)
         marked_frame = aruco.drawDetectedMarkers(frame, corners, ids)
         data = Image.fromarray(marked_frame)
-        data.save(f"runtime/marked-frame-{int(time.time())}.png")
+        output_frame = f"runtime/marked-frame-{int(time.time())}.png"
+        Log.info(f"Saving marked frame to {output_frame}")
+        data.save(output_frame)
         markers = {}
         for x in range(len(corners)):
             fid = str(ids[x][0])
@@ -115,4 +129,5 @@ class Camera:
                     fid,
                     corners[x][0]
                 )
+        Log.info(f"Markers extracted from frame. Found {len(corners)} markers.")
         return markers
