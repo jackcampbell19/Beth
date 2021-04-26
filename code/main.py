@@ -36,7 +36,11 @@ board = Board(
 # Init the arm
 arm = Arm(
     x_size=config['arm']['x-size'],
-    y_size=config['arm']['y-size']
+    y_size=config['arm']['y-size'],
+    x_stp=8,
+    x_dir=7,
+    y_stp=15,
+    y_dir=16
 )
 
 
@@ -45,7 +49,8 @@ Execute main function.
 """
 
 if __name__ == "__main__":
-    Log.LOG_INFO = False
+    while True:
+        arm.x_stepper.step(True)
     # Perform mechanical calibration
     arm.calibrate()
     # Perform camera distance calibration
@@ -54,7 +59,8 @@ if __name__ == "__main__":
             camera.calibrate_observed_distances()
             break
         except CalibrationMarkerNotVisible:
-            continue
+            input('\nExecution paused, press any key to continue.')
+            print()
     # Temporary sequence - move the arm to the given marker
     target_fid = "5"
     while True:
@@ -63,10 +69,9 @@ if __name__ == "__main__":
         # If marker is not present, move to random location and try again
         if target_fid not in markers:
             arm.move_to_random_position()
-            time.sleep(1)
             continue
         # Calculate the vector between the current position and the target markers position
         movement_vector = markers[target_fid].center - center
         Log.debug(movement_vector)
-        # Wait before moving again
-        time.sleep(3)
+
+        time.sleep(1)

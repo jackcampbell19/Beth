@@ -1,3 +1,6 @@
+from Log import Log
+import numpy as np
+
 
 class Marker:
 

@@ -57,7 +57,8 @@ class Camera:
         :param r: Number of initial frames to read to allow for calibration.
         :return: np array of pixel data
         """
-        Log.info('Capturing frame from camera.')
+        Log.info(f"Capturing frame from camera with {r} initial "
+                 f"frames and{'' if correct_distortion else ' no'} distortion correction.")
         for _ in range(r):
             self.camera.read()
         success, frame = self.camera.read()
@@ -75,7 +76,7 @@ class Camera:
         :return: [Marker...]
         """
         Log.info('Taking snapshot from camera.')
-        frame = self.capture_frame()
+        frame = self.capture_frame(r=0)
         markers = Camera.extract_markers(frame)
         Log.info(f"Scaling snapshot markers for real world distances using scalar {self.mm_per_pixel}.")
         for key in markers:
@@ -89,10 +90,11 @@ class Camera:
         Uses markers with know distance to calculate the real world distances being captured by the camera.
         """
         # Get all the markers
-        Log.info('Calibrating camera using reference markers.')
+        start_fid, end_fid, fid_distance = self.distance_calibration
+        Log.info(f"Calibrating camera using reference markers {start_fid} and {end_fid} at "
+                 f"distance of {fid_distance} millimeters.")
         frame = self.capture_frame()
         markers = Camera.extract_markers(frame)
-        start_fid, end_fid, fid_distance = self.distance_calibration
         if start_fid not in markers or end_fid not in markers:
             Log.warn('Calibration marker is not visible. Ensure it is in the frame of the camera.')
             raise CalibrationMarkerNotVisible()
@@ -110,7 +112,7 @@ class Camera:
         :param marker_type:
         :return:
         """
-        Log.info('Extracting markers from camera frame.')
+        Log.info('Extracting aruco markers from camera frame.')
         aruco_dict = aruco.Dictionary_get(marker_type)
         parameters = aruco.DetectorParameters_create()
         corners, ids, _ = aruco.detectMarkers(frame, aruco_dict, parameters=parameters)
@@ -127,5 +129,5 @@ class Camera:
                     fid,
                     corners[x][0]
                 )
-        Log.info(f"Markers extracted from frame. Found {len(corners)} markers.")
+        Log.info(f"Found {len(corners)} markers: {list(markers.keys())}")
         return markers
