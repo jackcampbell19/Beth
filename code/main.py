@@ -4,11 +4,14 @@ from Camera import Camera
 import json
 import time
 
+from Exceptions import CalibrationMarkerNotVisible
+from Log import Log
 from Marker import Marker
 
 """
 Initialize global objects using the config file.
 """
+Log.info('Initializing components.')
 # Read the config file
 f = open("config.json")
 config = json.load(f)
@@ -43,11 +46,19 @@ Execute main function.
 
 if __name__ == "__main__":
     # Perform mechanical calibration
+    Log.info('Calibrating mechanical components.')
     arm.calibrate()
     # Perform camera distance calibration
-    camera.calibrate_observed_distances()
+    Log.info('Calibrating camera.')
+    while True:
+        try:
+            camera.calibrate_observed_distances()
+            break
+        except CalibrationMarkerNotVisible:
+            Log.warn('Calibration marker is not visible. Ensure it is in the frame of the camera.')
+            time.sleep(1)
     # Temporary sequence - move the arm to the given marker
-    target_fid = "10"
+    target_fid = "5"
     while True:
         # Take snapshot to get all of the markers present
         markers, center = camera.take_snapshot()
