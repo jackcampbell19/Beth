@@ -38,10 +38,10 @@ board = Board(
 arm = Arm(
     x_size=config['arm']['x-size'],
     y_size=config['arm']['y-size'],
-    x_stp=8,
-    x_dir=7,
-    y_stp=15,
-    y_dir=16
+    x_stp=23,
+    x_dir=22,
+    y_stp=24,
+    y_dir=25
 )
 
 
@@ -54,6 +54,7 @@ if __name__ == "__main__":
         arm.x_stepper.motor_go(steps=200)
         time.sleep(2)
     arm.cleanup()
+    exit()
     # Perform mechanical calibration
     arm.calibrate()
     # Perform camera distance calibration
