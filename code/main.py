@@ -45,6 +45,7 @@ Execute main function.
 """
 
 if __name__ == "__main__":
+    Log.LOG_INFO = False
     # Perform mechanical calibration
     arm.calibrate()
     # Perform camera distance calibration
