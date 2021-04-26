@@ -1,7 +1,7 @@
 import random
 import numpy as np
 from RpiMotorLib import RpiMotorLib
-import Rpi.GPIO as GPIO
+import RPi.GPIO as GPIO
 
 
 class Arm:
