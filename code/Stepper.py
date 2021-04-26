@@ -10,7 +10,7 @@ GPIO.setmode(GPIO.BOARD)
 # Stepper class.
 class Stepper:
 
-    SHORTEST_DELAY = 0.02
+    SHORTEST_DELAY = 0.002
 
     def __init__(self, stp, dir):
         self.stp = stp
