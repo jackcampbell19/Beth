@@ -1,6 +1,7 @@
 import random
 import numpy as np
 from Stepper import Stepper
+from RpiMotorLib import RpiMotorLib
 
 
 class Arm:
@@ -9,8 +10,12 @@ class Arm:
         self.x_size = x_size
         self.y_size = y_size
         self.current_position = np.array([0, 0])
-        self.x_stepper = Stepper(x_stp, x_dir)
-        self.y_stepper = Stepper(y_stp, y_dir)
+        self.x_stepper = RpiMotorLib.A4988Nema(
+            direction_pin=x_dir,
+            step_pin=x_stp,
+            mode_pins=(21, 21, 21),
+            motor_type="DRV8825"
+        )
 
     def calibrate(self):
         pass

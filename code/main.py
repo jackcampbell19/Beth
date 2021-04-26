@@ -7,6 +7,7 @@ import time
 from Exceptions import CalibrationMarkerNotVisible
 from Log import Log
 from Marker import Marker
+from RpiMotorLib import RpiMotorLib
 
 """
 Initialize global objects using the config file.
@@ -50,7 +51,8 @@ Execute main function.
 
 if __name__ == "__main__":
     while True:
-        arm.x_stepper.step(True)
+        arm.x_stepper.motor_go(steps=200)
+        time.sleep(2)
     # Perform mechanical calibration
     arm.calibrate()
     # Perform camera distance calibration
