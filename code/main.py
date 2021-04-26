@@ -51,7 +51,6 @@ Execute main function.
 if __name__ == "__main__":
     while True:
         arm.x_stepper.step(True)
-        time.sleep(1)
     # Perform mechanical calibration
     arm.calibrate()
     # Perform camera distance calibration
