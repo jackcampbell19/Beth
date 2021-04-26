@@ -5,6 +5,7 @@ from Exceptions import *
 import cv2.aruco as aruco
 import time
 
+from Log import Log
 from Marker import Marker
 
 

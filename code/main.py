@@ -56,13 +56,11 @@ if __name__ == "__main__":
             break
         except CalibrationMarkerNotVisible:
             Log.warn('Calibration marker is not visible. Ensure it is in the frame of the camera.')
-            time.sleep(1)
     # Temporary sequence - move the arm to the given marker
     target_fid = "5"
     while True:
         # Take snapshot to get all of the markers present
         markers, center = camera.take_snapshot()
-        print(markers)
         # If marker is not present, move to random location and try again
         if target_fid not in markers:
             arm.move_to_random_position()
