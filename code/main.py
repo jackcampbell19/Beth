@@ -1,14 +1,12 @@
-from Arm import Arm
-from Board import Board
-from Camera import Camera
 import json
 import time
 import numpy as np
 
+from Arm import Arm
+from Board import Board
+from Camera import Camera
 from Exceptions import CalibrationMarkerNotVisible
 from Log import Log
-from Marker import Marker
-from RpiMotorLib import RpiMotorLib
 
 """
 Initialize global objects using the config file.
@@ -71,7 +69,7 @@ if __name__ == "__main__":
         if target_fid not in markers:
             Log.debug('Target marker not found.')
             # arm.move_to_random_position()
-            time.sleep(5)
+            time.sleep(4)
             continue
         # Calculate the vector between the current position and the target markers position
         movement_vector = markers[target_fid].center - center
@@ -82,4 +80,4 @@ if __name__ == "__main__":
             continue
         Log.debug(movement_vector)
         arm.move_along_vector(np.array([int(movement_vector[0]), int(movement_vector[1])]))
-        time.sleep(5)
+        time.sleep(4)
