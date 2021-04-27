@@ -52,7 +52,7 @@ class Camera:
         undistorted_img = cv2.remap(frame, m1, m2, interpolation=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
         return undistorted_img
 
-    def capture_frame(self, r=5, correct_distortion=True)
+    def capture_frame(self, r=5, correct_distortion=True):
         """
         Captures a frame from the camera.
         :param correct_distortion: Tell the function if it should correct for distortion.
