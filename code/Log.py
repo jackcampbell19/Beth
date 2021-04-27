@@ -9,7 +9,11 @@ class Log:
 
     @staticmethod
     def elapsed_time():
-        return f"\033[37m({int(time.time() - INIT_TIME)}s)\033[0m"
+        return f"\033[37m({Log.elapsed_time_raw()}s)\033[0m"
+
+    @staticmethod
+    def elapsed_time_raw():
+        return int(time.time() - INIT_TIME)
 
     @staticmethod
     def info(message):
