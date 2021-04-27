@@ -51,7 +51,8 @@ Execute main function.
 
 if __name__ == "__main__":
     for x in range(5):
-        arm.x_stepper.motor_go(steps=200, stepdelay=0.005)
+        arm.x_stepper.motor_go(clockwise=True, steps=200, stepdelay=0.005)
+        arm.y_stepper.motor_go(clockwise=True, steps=200, stepdelay=0.005)
         time.sleep(2)
     arm.cleanup()
     exit()

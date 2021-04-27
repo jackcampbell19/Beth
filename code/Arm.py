@@ -16,6 +16,12 @@ class Arm:
             mode_pins=(21, 21, 21),
             motor_type="DRV8825"
         )
+        self.y_stepper = RpiMotorLib.A4988Nema(
+            direction_pin=y_dir,
+            step_pin=y_stp,
+            mode_pins=(21, 21, 21),
+            motor_type="DRV8825"
+        )
 
     def cleanup(self):
         GPIO.cleanup()
