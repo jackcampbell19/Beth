@@ -31,6 +31,7 @@ class Arm:
 
     def position(self, v):
         steps = v - self.current_position
+        print((steps[0] > 0), abs(steps[0]))
         self.x_stepper.motor_go(clockwise=(steps[0] > 0), steps=abs(steps[0]))
         self.y_stepper.motor_go(clockwise=(steps[1] > 0), steps=abs(steps[1]))
 
