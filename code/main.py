@@ -3,6 +3,7 @@ from Board import Board
 from Camera import Camera
 import json
 import time
+import numpy as np
 
 from Exceptions import CalibrationMarkerNotVisible
 from Log import Log
