@@ -27,6 +27,8 @@ class Camera:
         self.camera = cv2.VideoCapture(index)
         self.camera.set(cv2.CAP_PROP_FRAME_WIDTH, width)
         self.camera.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
+        self.camera.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+        self.camera.set(cv2.CAP_PROP_FPS, 2)
         self.width = width
         self.height = height
         self.k = np.array(k)
