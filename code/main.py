@@ -37,6 +37,7 @@ board = Board(
 )
 # Init the arm
 arm = Arm(
+    stepr_per_mm=config['arm']['steps-per-mm'],
     x_size=config['arm']['x-size'],
     y_size=config['arm']['y-size'],
     x_stp=23,
@@ -51,10 +52,6 @@ Execute main function.
 """
 
 if __name__ == "__main__":
-    arm.move_along_vector(np.array([100, 50]))
-    arm.move_along_vector(np.array([100, 50]))
-    arm.move_along_vector(np.array([-200, -50]))
-    exit()
     # Perform mechanical calibration
     arm.calibrate()
     # Perform camera distance calibration

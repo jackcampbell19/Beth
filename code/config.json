@@ -24,6 +24,7 @@
   },
   "arm": {
     "x-size": 8000,
-    "y-size": 8000
+    "y-size": 8000,
+    "steps-per-mm": 25
   }
 }
