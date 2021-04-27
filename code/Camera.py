@@ -71,8 +71,8 @@ class Camera:
         if correct_distortion:
             frame = self.correct_distortion(frame)
 
-        data = Image.fromarray(frame)
-        data.save(f"runtime/frame-{Log.elapsed_time_raw()}.jpg")
+        # data = Image.fromarray(frame)
+        # data.save(f"runtime/frame-{Log.elapsed_time_raw()}.jpg")
 
         return frame
 
