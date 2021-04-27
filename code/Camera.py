@@ -27,7 +27,7 @@ class Camera:
         self.camera = cv2.VideoCapture(index)
         self.camera.set(cv2.CAP_PROP_FRAME_WIDTH, width)
         self.camera.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
-        self.camera.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+        self.camera.set(cv2.CAP_PROP_BUFFERSIZE, 0)
         self.camera.set(cv2.CAP_PROP_FPS, 2)
         self.width = width
         self.height = height
@@ -59,8 +59,8 @@ class Camera:
         :param r: Number of initial frames to read to allow for calibration.
         :return: np array of pixel data
         """
-        self.camera.release()
-        self.camera = cv2.VideoCapture(0)
+        # self.camera.release()
+        # self.camera = cv2.VideoCapture(0)
         Log.info(f"Capturing frame from camera with {r} initial "
                  f"frames and{'' if correct_distortion else ' no'} distortion correction.")
         for _ in range(r):
