@@ -30,8 +30,7 @@ class Arm:
         pass
 
     def position(self, v):
-        steps = self.current_position - v
-        print(steps)
+        steps = v - self.current_position
         self.x_stepper.motor_go(clockwise=(steps[0] > 0), steps=abs(steps[0]))
         self.y_stepper.motor_go(clockwise=(steps[1] > 0), steps=abs(steps[1]))
 
