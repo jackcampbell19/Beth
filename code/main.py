@@ -71,7 +71,7 @@ if __name__ == "__main__":
         if target_fid not in markers:
             Log.debug('Target marker not found.')
             # arm.move_to_random_position()
-            time.sleep(1)
+            time.sleep(5)
             continue
         # Calculate the vector between the current position and the target markers position
         movement_vector = markers[target_fid].center - center
