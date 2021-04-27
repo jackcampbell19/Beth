@@ -52,7 +52,6 @@ Execute main function.
 
 if __name__ == "__main__":
     arm.position(np.array([100, 100]))
-    time.sleep(4)
     arm.position(np.array([0, 0]))
     exit()
     # Perform mechanical calibration

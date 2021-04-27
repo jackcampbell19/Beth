@@ -31,8 +31,11 @@ class Arm:
 
     def position(self, v):
         steps = v - self.current_position
-        self.x_stepper.motor_go(clockwise=True, steps=abs(steps[0]))
-        self.y_stepper.motor_go(clockwise=True, steps=abs(steps[1]))
+        x_clockwise = steps[0] > 0
+        y_clockwise = steps[1] > 0
+        self.x_stepper.motor_go(clockwise=x_clockwise, steps=abs(steps[0]))
+        self.y_stepper.motor_go(clockwise=y_clockwise, steps=abs(steps[1]))
+        self.current_position = v
 
     def move_along_vector(self, v):
         self.position(self.current_position + v)
