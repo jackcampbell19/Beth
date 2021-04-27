@@ -74,6 +74,11 @@ if __name__ == "__main__":
             continue
         # Calculate the vector between the current position and the target markers position
         movement_vector = markers[target_fid].center - center
+        movement_vector *= -1
+        if np.linalg.norm(movement_vector) < 2:
+            Log.info('Target marker is within 2mm of the center of the frame.')
+            time.sleep(2)
+            continue
         Log.debug(movement_vector)
-
+        arm.move_along_vector(movement_vector)
         time.sleep(1)
