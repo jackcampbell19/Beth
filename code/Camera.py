@@ -52,13 +52,15 @@ class Camera:
         undistorted_img = cv2.remap(frame, m1, m2, interpolation=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
         return undistorted_img
 
-    def capture_frame(self, r=5, correct_distortion=True):
+    def capture_frame(self, r=5, correct_distortion=True)
         """
         Captures a frame from the camera.
         :param correct_distortion: Tell the function if it should correct for distortion.
         :param r: Number of initial frames to read to allow for calibration.
         :return: np array of pixel data
         """
+        self.camera.release()
+        self.camera = cv2.VideoCapture(0)
         Log.info(f"Capturing frame from camera with {r} initial "
                  f"frames and{'' if correct_distortion else ' no'} distortion correction.")
         for _ in range(r):
@@ -71,8 +73,8 @@ class Camera:
         if correct_distortion:
             frame = self.correct_distortion(frame)
 
-        # data = Image.fromarray(frame)
-        # data.save(f"runtime/frame-{Log.elapsed_time_raw()}.jpg")
+        data = Image.fromarray(frame)
+        data.save(f"runtime/frame-{Log.elapsed_time_raw()}.jpg")
 
         return frame
 
