@@ -4,6 +4,8 @@ from PIL import Image
 from Exceptions import *
 import cv2.aruco as aruco
 import time
+import queue
+import threading
 
 from Log import Log
 from Marker import Marker
@@ -27,14 +29,31 @@ class Camera:
         self.camera = cv2.VideoCapture(index)
         self.camera.set(cv2.CAP_PROP_FRAME_WIDTH, width)
         self.camera.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
-        self.camera.set(cv2.CAP_PROP_BUFFERSIZE, 0)
-        self.camera.set(cv2.CAP_PROP_FPS, 2)
+        # self.camera.set(cv2.CAP_PROP_BUFFERSIZE, 0)
+        # self.camera.set(cv2.CAP_PROP_FPS, 2)
         self.width = width
         self.height = height
         self.k = np.array(k)
         self.d = np.array(d)
         self.distance_calibration = distance_calibration
         self.mm_per_pixel = 1.0
+        self.frame_queue = queue.Queue()
+        t = threading.Thread(target=self.frame_reader)
+        t.daemon = True
+        t.start()
+
+    def frame_reader(self):
+        while True:
+            ret, frame = self.camera.read()
+            if not ret:
+                break
+            if not self.frame_queue.empty():
+                try:
+                    # Discard previous unprocessed frame
+                    self.frame_queue.get_nowait()
+                except queue.Empty:
+                    pass
+            self.frame_queue.put(frame)
 
     def correct_distortion(self, frame):
         """
@@ -52,20 +71,17 @@ class Camera:
         undistorted_img = cv2.remap(frame, m1, m2, interpolation=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
         return undistorted_img
 
-    def capture_frame(self, r=5, correct_distortion=True):
+    def capture_frame(self, correct_distortion=True):
         """
         Captures a frame from the camera.
         :param correct_distortion: Tell the function if it should correct for distortion.
-        :param r: Number of initial frames to read to allow for calibration.
         :return: np array of pixel data
         """
         # self.camera.release()
         # self.camera = cv2.VideoCapture(0)
-        Log.info(f"Capturing frame from camera with {r} initial "
-                 f"frames and{'' if correct_distortion else ' no'} distortion correction.")
-        for _ in range(r):
-            self.camera.read()
-        success, frame = self.camera.read()
+        Log.info(f"Capturing frame from camera with"
+                 f"{'' if correct_distortion else ' no'} distortion correction.")
+        success, frame = self.frame_queue.get()
         if not success:
             Log.error('Frame could not be read from camera.')
             raise CameraError()
@@ -84,7 +100,7 @@ class Camera:
         :return: [Marker...]
         """
         Log.info('Taking snapshot from camera.')
-        frame = self.capture_frame(r=0)
+        frame = self.capture_frame()
         markers = Camera.extract_markers(frame)
         Log.info(f"Scaling snapshot markers for real world distances using scalar {self.mm_per_pixel}.")
         for key in markers:
