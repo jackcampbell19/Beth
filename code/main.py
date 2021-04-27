@@ -51,8 +51,9 @@ Execute main function.
 """
 
 if __name__ == "__main__":
-    arm.position(np.array([100, 100]))
-    arm.position(np.array([0, 0]))
+    arm.move_along_vector(np.array([100, 50]))
+    arm.move_along_vector(np.array([100, 50]))
+    arm.move_along_vector(np.array([-200, -50]))
     exit()
     # Perform mechanical calibration
     arm.calibrate()
@@ -71,6 +72,7 @@ if __name__ == "__main__":
         markers, center = camera.take_snapshot()
         # If marker is not present, move to random location and try again
         if target_fid not in markers:
+            Log.debug('Target marker not found.')
             arm.move_to_random_position()
             continue
         # Calculate the vector between the current position and the target markers position

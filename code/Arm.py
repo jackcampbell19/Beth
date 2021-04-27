@@ -23,9 +23,6 @@ class Arm:
             motor_type="DRV8825"
         )
 
-    def cleanup(self):
-        GPIO.cleanup()
-
     def calibrate(self):
         pass
 
