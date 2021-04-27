@@ -32,8 +32,8 @@ class Arm:
         Log.info(f"Setting position to {v}")
         steps = v - self.current_position
         steps *= self.steps_per_mm
-        self.x_stepper.motor_go(clockwise=True if steps[0] > 0 else False, steps=abs(steps[0]))
-        self.y_stepper.motor_go(clockwise=True if steps[1] > 0 else False, steps=abs(steps[1]))
+        self.x_stepper.motor_go(clockwise=True if steps[0] > 0 else False, steps=abs(steps[0]), stepdelay=0.05)
+        self.y_stepper.motor_go(clockwise=True if steps[1] > 0 else False, steps=abs(steps[1]), stepdelay=0.05)
         self.current_position = v
 
     def move_along_vector(self, v):
