@@ -50,7 +50,7 @@ class Camera:
         undistorted_img = cv2.remap(frame, m1, m2, interpolation=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
         return undistorted_img
 
-    def capture_frame(self, r=1, correct_distortion=True):
+    def capture_frame(self, r=5, correct_distortion=True):
         """
         Captures a frame from the camera.
         :param correct_distortion: Tell the function if it should correct for distortion.
@@ -68,6 +68,10 @@ class Camera:
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         if correct_distortion:
             frame = self.correct_distortion(frame)
+
+        data = Image.fromarray(frame)
+        data.save(f"frame-{Log.elapsed_time()}.jpg")
+
         return frame
 
     def take_snapshot(self):
