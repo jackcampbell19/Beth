@@ -31,16 +31,10 @@ class Arm:
 
     def position(self, v):
         pass
-        # x_steps = (self.current_position - v)[0]
-        # x_forward = x_steps > 0
-        # x_steps = abs(x_steps)
-        # for _ in range(x_steps):
-        #     self.x_stepper.step(forward=x_forward)
-        # y_steps = (self.current_position - v)[1]
-        # y_forward = y_steps > 0
-        # y_steps = abs(y_steps)
-        # for _ in range(y_steps):
-        #     self.y_stepper.step(forward=y_forward)
+        x_steps = (self.current_position - v)[0]
+        self.x_stepper.motor_go(clockwise=x_steps > 0, steps=abs(x_steps))
+        y_steps = (self.current_position - v)[1]
+        self.y_stepper.motor_go(clockwise=y_steps > 0, steps=abs(y_steps))
 
     def move_along_vector(self, v):
         self.position(self.current_position + v)
