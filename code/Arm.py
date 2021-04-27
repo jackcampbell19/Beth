@@ -2,6 +2,8 @@ import random
 import numpy as np
 from RpiMotorLib import RpiMotorLib
 
+from Log import Log
+
 
 class Arm:
 
@@ -26,7 +28,8 @@ class Arm:
     def calibrate(self):
         pass
 
-    def position(self, v):
+    def set_position(self, v):
+        Log.info(f"Setting position to {v}")
         steps = v - self.current_position
         steps *= self.steps_per_mm
         self.x_stepper.motor_go(clockwise=True if steps[0] > 0 else False, steps=abs(steps[0]))
@@ -34,13 +37,13 @@ class Arm:
         self.current_position = v
 
     def move_along_vector(self, v):
-        self.position(self.current_position + v)
+        self.set_position(self.current_position + v)
 
     def move_to_random_position(self):
         """
         Moves to a random position within the arms movement space.
         """
-        self.position(np.array(
+        self.set_position(np.array(
             [
                 random.randint(0, self.x_size),
                 random.randint(0, self.y_size)

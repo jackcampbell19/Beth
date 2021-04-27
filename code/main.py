@@ -78,6 +78,7 @@ if __name__ == "__main__":
             Log.info('Target marker is within 2mm of the center of the frame.')
             time.sleep(1)
             continue
+        movement_vector = np.array([int(movement_vector[0]), int(movement_vector[1])])
         Log.debug(movement_vector)
-        arm.move_along_vector(np.array([int(movement_vector[0]), int(movement_vector[1])]))
+        arm.move_along_vector(movement_vector)
         time.sleep(1)
