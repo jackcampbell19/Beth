@@ -80,5 +80,5 @@ if __name__ == "__main__":
             time.sleep(2)
             continue
         Log.debug(movement_vector)
-        arm.move_along_vector(movement_vector)
+        arm.move_along_vector(np.array([int(movement_vector[0]), int(movement_vector[1])]))
         time.sleep(1)
