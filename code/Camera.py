@@ -46,7 +46,8 @@ class Camera:
         while True:
             ret, frame = self.camera.read()
             if not ret:
-                break
+                Log.error('Frame could not be read from camera.')
+                raise CameraError()
             if not self.frame_queue.empty():
                 try:
                     # Discard previous unprocessed frame
@@ -81,10 +82,7 @@ class Camera:
         # self.camera = cv2.VideoCapture(0)
         Log.info(f"Capturing frame from camera with"
                  f"{'' if correct_distortion else ' no'} distortion correction.")
-        success, frame = self.frame_queue.get()
-        if not success:
-            Log.error('Frame could not be read from camera.')
-            raise CameraError()
+        frame = self.frame_queue.get()
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         if correct_distortion:
             frame = self.correct_distortion(frame)
