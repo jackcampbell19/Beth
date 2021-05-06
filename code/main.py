@@ -1,17 +1,15 @@
 import json
-import time
 import numpy as np
 
-from Arm import Arm
+from Gantry import Gantry
 from Board import Board
 from Camera import Camera
-from Exceptions import CalibrationMarkerNotVisible
-from Log import Log
+from Log import log
 
 """
 Initialize global objects using the config file.
 """
-Log.info('Initializing components.')
+log.info('Initializing components.')
 # Read the config file
 f = open("config.json")
 config = json.load(f)
@@ -19,8 +17,7 @@ f.close()
 # Init the camera
 camera = Camera(
     index=0,
-    width=1920,
-    height=1080,
+    size=[1920, 1080],
     k=config['camera']['calibration']['k'],
     d=config['camera']['calibration']['d'],
     distance_calibration=config['camera']['calibration']['distance']
@@ -33,15 +30,11 @@ board = Board(
     br_fid=config['board-corner-fid-mapping']['bottom-right'],
     fid_to_piece_map=config["fid-piece-mapping"]
 )
-# Init the arm
-arm = Arm(
-    stepr_per_mm=config['arm']['steps-per-mm'],
-    x_size=config['arm']['x-size'],
-    y_size=config['arm']['y-size'],
-    x_stp=23,
-    x_dir=22,
-    y_stp=24,
-    y_dir=25
+# Init the gantry
+gantry = Gantry(
+    size=config['gantry']['size'],
+    x_pins=config['gantry']['x-pins'],
+    y_pins=config['gantry']['y-pins']
 )
 
 
@@ -49,34 +42,61 @@ arm = Arm(
 Execute main function.
 """
 
+
+def move_to_target_no_info(target_fid, proximity_threshold, units):
+    # Take snapshot to get all of the markers present
+    markers, center = camera.take_snapshot()
+    # If marker is not present return
+    if target_fid not in markers:
+        log.error('Target marker not found.')
+        return
+    # Store initial positions
+    target_start_position = markers[target_fid].center.copy()
+    arm_start_position = gantry.current_position.copy()
+    # Calculate the vector between the current position and the target markers position using arbitrary units
+    direction_vector = markers[target_fid].center - center
+    direction_vector *= -1
+    # If the point is within the allowed distance from the center return
+    if np.linalg.norm(direction_vector) < proximity_threshold:
+        log.info(f"Target marker is within {proximity_threshold} units of the center of the frame.")
+        return
+    # Convert the direction vector from floats to ints
+    direction_vector *= 1.0 / np.linalg.norm(direction_vector) * units
+    direction_vector = direction_vector.astype(int)
+    log.debug(direction_vector)
+    # Move the arm along this vector
+    gantry.move_along_vector(direction_vector)
+    # Take snapshot to get all of the markers present
+    markers, center = camera.take_snapshot()
+    # If marker is not present, reset the position and call the function again to ensure the new position is in frame
+    if target_fid not in markers:
+        log.warn('Marker out of frame. Reverting position.')
+        gantry.move_along_vector(-direction_vector)
+        move_to_target_no_info(target_fid, proximity_threshold, units - 10)
+        return
+    # Store new position
+    target_end_position = markers[target_fid].center.copy()
+    arm_end_position = gantry.current_position.copy()
+    # Calculate observed distances
+    arm_actual_distance = np.linalg.norm(arm_end_position - arm_start_position)
+    target_observed_distance = np.linalg.norm(target_end_position - target_start_position)
+    log.debug(f"arm_actual_distance: {arm_actual_distance}, target_observed_distance: {target_observed_distance}")
+    # Move back and move to scaled position
+    scalar = arm_actual_distance / target_observed_distance
+    gantry.move_along_vector(-direction_vector)
+    adjusted_vector = direction_vector * scalar
+    adjusted_vector = adjusted_vector.astype(int)
+    gantry.move_along_vector(adjusted_vector)
+    # Check how far it is from the target
+    markers, center = camera.take_snapshot()
+    target_final_position = markers[target_fid].center.copy()
+    arm_final_position = gantry.current_position.copy()
+    target_distance_from_center = np.linalg.norm(center - target_final_position)
+    log.debug(f"Distance from center: {target_distance_from_center}")
+
+
 if __name__ == "__main__":
     # Perform mechanical calibration
-    arm.calibrate()
-    # Perform camera distance calibration
-    while True:
-        try:
-            camera.calibrate_observed_distances()
-            break
-        except CalibrationMarkerNotVisible:
-            input('\nExecution paused, press any key to continue.')
-            print()
-    # Temporary sequence - move the arm to the given marker
-    target_fid = "5"
-    while True:
-        # Take snapshot to get all of the markers present
-        markers, center = camera.take_snapshot()
-        # If marker is not present, move to random location and try again
-        if target_fid not in markers:
-            Log.debug('Target marker not found.')
-            # arm.move_to_random_position()
-            continue
-        # Calculate the vector between the current position and the target markers position
-        movement_vector = markers[target_fid].center - center
-        movement_vector *= -1
-        if np.linalg.norm(movement_vector) < 2:
-            Log.info('Target marker is within 2mm of the center of the frame.')
-            continue
-        movement_vector *= 0.9
-        movement_vector = np.array([int(movement_vector[0]), int(movement_vector[1])])
-        Log.debug(movement_vector)
-        arm.move_along_vector(movement_vector)
+    gantry.calibrate()
+
+    move_to_target_no_info("5", 5, 800)

@@ -22,9 +22,9 @@
       "distance": ["14", "15", 50]
     }
   },
-  "arm": {
-    "x-size": 8000,
-    "y-size": 8000,
-    "steps-per-mm": 25
+  "gantry": {
+    "size": [1800, 1800],
+    "x-pins": [23, 22],
+    "y-pins": [24, 25]
   }
 }

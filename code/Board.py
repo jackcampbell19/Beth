@@ -2,6 +2,9 @@ from Marker import Marker
 
 
 class Board:
+    """
+    Represents the chess board. Tracks where the pieces are and all fid associations.
+    """
 
     def __init__(self, tl_fid, tr_fid, bl_fid, br_fid, fid_to_piece_map):
         # Define all components
