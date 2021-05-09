@@ -1,81 +1,165 @@
 from RPi.GPIO import gpio
 import time
+from typing import Optional, Final
+
+
+class Functions:
+
+    @staticmethod
+    def quadratic(x: float) -> float:
+        return -(2 * x - 1) ** 2 + 1
+
+    @staticmethod
+    def linear(x: float) -> float:
+        return 0.0
+
+    @staticmethod
+    def linear_decreasing(x: float) -> float:
+        return -x + 1
+
+    @staticmethod
+    def linear_increasing(x: float) -> float:
+        return x
+
 
 class Stepper:
 
-    QUADRATIC = lambda x: -(2 * x - 1) ** 2 + 1
-    LINEAR_DECREASING = lambda x: -x + 1
-    LINEAR_INCREASING = lambda x: x
-    LINEAR = lambda x: 0
-
-    def __init__(self, step, direction, enable=None, reset=None, sleep=None, mode=None):
+    def __init__(self, step: int, direction: int, enable: int = None,
+                 reset: int = None, sleep: int = None, mode: int = None):
         """
         Initializes the driver using the given pins.
         :param step: stp pin on board.
-        :param direction: direction pin on board.
+        :param direction: dir pin on board.
         :param enable: enable pin on board.
         :param reset: reset pin on board.
         :param sleep: sleep pin on board.
         :param mode: mode pin on board.
         """
-        self.stp = step
-        self.dir = direction
-        self.en = enable
-        self.rst = reset
-        self.slp = sleep
-        self.mode = mode
+        # Setup driver pins
+        self.stp: Final[int] = step
+        self.dir: Final[int] = direction
+        self.en: Final[int] = enable
+        self.rst: Final[int] = reset
+        self.slp: Final[int] = sleep
+        self.mode: Final[int] = mode
         gpio.setmode(gpio.BCM)
         for pin in [self.stp, self.dir, self.en, self.rst, self.slp, self.mode]:
             gpio.setup(pin, gpio.OUTPUT)
-        self.current_position = 0
-        self.default_delay = 0.0005
-        self.sleep_when_not_moving = True
-        self.target_position = None
+        # Initialize properties
+        self._current_position: int = 0
+        self.min_delay: float = 0.0005
+        self.delay_range: float = self.min_delay * 2
+        self.__sleep_while_idle: bool = False
+        self.acceleration_curve = Functions.quadratic
+        self._target_position: Optional[int] = None
+        # Set initial pin values
 
-    def set_default_delay(self, delay):
-        self.default_delay = delay
+    @property
+    def sleep_while_idle(self):
+        return self.__sleep_while_idle
 
-    def set_sleep_when_not_moving(self, val):
-        self.default_delay = val
+    @sleep_while_idle.setter
+    def sleep_while_idle(self, b: bool):
+        if self.stp is not None:
+            gpio.output(self.stp, b)
+        self.__sleep_while_idle = b
+
+    def get_current_position(self) -> int:
+        """
+        Returns the current position.
+        :return: {int} current position
+        """
+        return self._current_position
+
+    def get_target_position(self) -> Optional[int]:
+        """
+        Returns the current position.
+        :return: {int} current position
+        """
+        return self._target_position
+
+    def get_required_steps_for_target(self) -> int:
+        """
+        Returns the number of steps between the current and target positions
+        :return:
+        """
+        return abs(self._target_position - self._current_position)
+
+    def get_required_direction_for_target(self) -> bool:
+        """
+        Returns True if the stepper must rotate clockwise for the target
+        :return:
+        """
+        return self._current_position < self._target_position
 
     def set_position_abs(self, position):
-        self.target_position = position
+        """
+        Sets the target position to the absolute position given.
+        :param position: The position to target.
+        """
+        self._target_position = position
 
     def set_position_rel(self, position):
-        self.target_position += position
+        """
+        Sets the target position as if the current position is 0.
+        :param position: The relative position.
+        """
+        self._target_position += position
 
+    def update_position(self, current: int, target: Optional[int]):
+        self._current_position = current
+        self._target_position = target
 
 
 class Controller:
 
-    def move_async(self, *steppers):
+    @staticmethod
+    def move_async(*steppers: Stepper):
         pass
 
-    def move_concurrently(self, *steppers, delay=0.0005):
-        step_max = 0
+    @staticmethod
+    def move_concurrently(*steppers: Stepper):
+        """
+        Moves all of the steppers at the same time at the same speed.
+        :param steppers:
+        :return:
+        """
+        step_max: int = 0
         for stepper in steppers:
-            if stepper.sleep_when_not_moving and stepper.slp is not None:
+            # If the 'sleep_while_idle' function is enabled, wake the steppers
+            if stepper.sleep_while_idle and stepper.slp is not None:
                 gpio.output(stepper.slp, True)
-            step_max = max(step_max, abs(stepper.current_position - stepper.target_position))
-            gpio.output(stepper.dir, stepper.current_position < stepper.target_position)
+            # Determine the maximum step count and set the direction pins for each stepper
+            step_max = max(step_max, stepper.get_required_steps_for_target())
+            gpio.output(stepper.dir, stepper.get_required_direction_for_target())
+        # Execute the steps for each stepper
         for i in range(step_max):
             for stepper in steppers:
-                if stepper.target_position is None:
+                # Skip if the target position has already been reached
+                if stepper.get_target_position() is None:
                     continue
-                active_delay = delay
+                # Calculate the active delay for the given step
+                active_delay: float = stepper.min_delay + \
+                    stepper.acceleration_curve(i / stepper.get_required_steps_for_target()) * stepper.delay_range
+                # Pulse the gpio pins
                 gpio.output(stepper.stp, True)
                 time.sleep(active_delay)
                 gpio.output(stepper.stp, False)
                 time.sleep(active_delay)
-                stepper.current_position += 1 if stepper.current_position < stepper.target_position else -1
-                if stepper.current_position == stepper.target_position:
-                    if stepper.sleep_when_not_moving and stepper.slp is not None:
+                # Check to see if the stepper has reached its target position
+                if stepper.get_current_position() + \
+                        (i + 1) * (1 if stepper.get_required_direction_for_target() else -1) == \
+                        stepper.get_target_position():
+                    # If the 'sleep_while_idle' function is enabled, put the stepper to sleep
+                    if stepper.sleep_while_idle and stepper.slp is not None:
                         gpio.output(stepper.slp, False)
-                    stepper.target_position = None
+                    # Update the position of the stepper
+                    stepper.update_position(current=stepper.get_target_position(), target=None)
 
 
 stepper_a = Stepper(15, 14, sleep=18)
+stepper_a.min_delay = 0.0005
+stepper_a.delay_range = 0.001
 
-controller = Controller()
+Controller.move_async(stepper_a)
 
-controller.move_async(stepper_a)
