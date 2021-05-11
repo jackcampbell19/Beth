@@ -1,4 +1,4 @@
-from RPi.GPIO import gpio
+import RPi.GPIO as gpio
 import time
 from typing import Optional, Final
 
@@ -30,8 +30,19 @@ def p_out(pin: Optional[int], val: bool):
 
 class Stepper:
 
-    def __init__(self, step: int, direction: int, enable: int = None,
-                 reset: int = None, sleep: int = None, mode: (int, int, int) = None):
+    MODE_FULL: int = 0
+    MODE_HALF: int = 1
+    MODE_QUARTER: int = 2
+    MODE_EIGHTH: int = 3
+    MODE_SIXTEENTH: int = 4
+    MODE_THIRTY_TWO: int = 5
+
+    def __init__(self, step: int,
+                 direction: Optional[int],
+                 enable: Optional[int] = None,
+                 reset: Optional[int] = None,
+                 sleep: Optional[int] = None,
+                 mode: Optional[(Optional[int], Optional[int], Optional[int])] = None):
         """
         Initializes the driver using the given pins.
         :param step: stp pin on board.
@@ -43,14 +54,17 @@ class Stepper:
         """
         # Setup driver pins
         self.stp: Final[int] = step
-        self.dir: Final[int] = direction
-        self.en: Final[int] = enable
-        self.rst: Final[int] = reset
-        self.slp: Final[int] = sleep
-        self.mode: Final[(int, int, int)] = mode
+        self.dir: Final[Optional[int]] = direction
+        self.en: Final[Optional[int]] = enable
+        self.rst: Final[Optional[int]] = reset
+        self.slp: Final[Optional[int]] = sleep
+        self.m0: Final[Optional[int]] = mode[0] if mode else None
+        self.m1: Final[Optional[int]] = mode[1] if mode else None
+        self.m2: Final[Optional[int]] = mode[2] if mode else None
         gpio.setmode(gpio.BCM)
-        for pin in [self.stp, self.dir, self.en, self.rst, self.slp, self.mode[0], self.mode[1], self.mode[2]]:
-            gpio.setup(pin, gpio.OUTPUT)
+        for pin in [self.stp, self.dir, self.en, self.rst, self.slp, self.m0, self.m1, self.m2]:
+            if pin is not None:
+                gpio.setup(pin, gpio.OUTPUT)
         # Initialize properties
         self._current_position: int = 0
         self.min_delay: float = 0.0005
@@ -59,15 +73,16 @@ class Stepper:
         self.acceleration_curve = Acceleration.quadratic
         self.acceleration_step_range: float = 0.5
         self._target_position: Optional[int] = None
+        self.__resolution_mode = Stepper.MODE_FULL
         # Set initial pin values
         p_out(self.dir, False)
         p_out(self.stp, False)
         p_out(self.en, False)
         p_out(self.rst, True)
         p_out(self.slp, True)
-        p_out(self.mode[0], False)
-        p_out(self.mode[1], False)
-        p_out(self.mode[1], False)
+        p_out(self.m0, False)
+        p_out(self.m1, False)
+        p_out(self.m2, False)
 
     @property
     def sleep_while_idle(self):
@@ -77,6 +92,27 @@ class Stepper:
     def sleep_while_idle(self, b: bool):
         p_out(self.stp, b)
         self.__sleep_while_idle = b
+
+    @property
+    def resolution_mode(self):
+        return self.__resolution_mode
+
+    @resolution_mode.setter
+    def resolution_mode(self, mode: int):
+        self.__resolution_mode = mode
+        mode_settings = [
+            (False, False, False),
+            (True, False, False),
+            (False, True, False),
+            (True, True, False),
+            (False, False, True),
+            (True, False, True),
+            (False, True, True),
+            (True, True, True)
+        ]
+        p_out(self.m0, mode_settings[mode][0])
+        p_out(self.m1, mode_settings[mode][1])
+        p_out(self.m2, mode_settings[mode][2])
 
     def get_current_position(self) -> int:
         """
@@ -145,7 +181,7 @@ class Controller:
                 p_out(stepper.slp, True)
             # Determine the maximum step count and set the direction pins for each stepper
             step_max = max(step_max, stepper.get_required_steps_for_target())
-            gpio.output(stepper.dir, stepper.get_required_direction_for_target())
+            p_out(stepper.dir, stepper.get_required_direction_for_target())
         # Execute the steps for each stepper
         for i in range(step_max):
             for stepper in steppers:
@@ -166,9 +202,9 @@ class Controller:
                                              ((float(i) - float(secondary_range_start)) / float(acceleration_steps))
                 active_delay += stepper.acceleration_curve(distribution_selection) * stepper.delay_range
                 # Pulse the gpio pins
-                gpio.output(stepper.stp, True)
+                p_out(stepper.stp, True)
                 time.sleep(active_delay)
-                gpio.output(stepper.stp, False)
+                p_out(stepper.stp, False)
                 time.sleep(active_delay)
                 # Check to see if the stepper has reached its target position
                 if stepper.get_current_position() + \
