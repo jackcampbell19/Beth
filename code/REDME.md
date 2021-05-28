@@ -1,19 +1,48 @@
 
 ### Definitions
 
-- **Camera** -  A camera attached to the main arm of the machine, moves with the arm.
+- **Gantry** - 3 dimensional mechanical structure used to move the camera and interact with the chess pieces.
 
-- **Piece** - Any chess piece on the board.
+- **fid** - 'Fiducial ID' aka. a marker identifier.
 
-- **Snapshot** - Image of part of the board.
+### Structure
 
-- **Anchor** - Specific fiducials placed on the board with known positions. Spread out so that one will be present in each snapshot.
+- [calibration] - A directory containing code and images used to calibrate the machine.
 
+- [runtime] - A directory containing any files generated during the operation of the program.
 
-### Algorithms
+### config.json
+The config.json file contains all variable information about the machine. This includes dimensions, fiducial associations, and calibration coefficients. The structure is as follows:
 
-1. Move to a given marker
-* Take a snapshot of the board
-* If the target marker is not in the snapshot, move the arm to a random location on the board until the target piece is in the snapshot
-* Calculate the vector between the current position and the target location in the snapshot and move the arm along that vector
-* Repeat until the marker is within a bounding box of the center of the snapshot
+```
+{
+  "board-corner-fid-mapping": {
+    "top-left": <fid>,
+    "top-right": <fid>,
+    "bottom-left": <fid>,
+    "bottom-right": <fid>
+  },
+  "fid-piece-mapping": {
+    <fid>: <chess-piece>,
+    ...
+  },
+  "camera": {
+    "width": <width>,
+    "height": <height>,
+    "calibration": {
+      "k": <k-array>,
+      "d": <d-array>,
+      "fid-correction-coefficients": {
+        "default": [<x-coeff>, <y-coeff>],
+        <fid>: [<x-coeff>, <y-coeff>],
+        ...
+      }
+    }
+  },
+  "gantry": {
+    "size": [<width>, <height>],
+    "x-pins": [<stp>, <dir>],
+    "y-pins": [[<stp>, <dir>], ...]
+  }
+}
+```

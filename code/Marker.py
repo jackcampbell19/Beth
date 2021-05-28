@@ -1,7 +1,7 @@
 
 class Marker:
     """
-    Represents a marker.
+    Represents a fiducial marker.
     """
 
     def __init__(self, fid, corners):
@@ -13,3 +13,10 @@ class Marker:
 
     def __repr__(self):
         return f"Marker(id: {self.id}, center: {self.center})"
+
+    def adjust(self, x, y):
+        self.center[0] += x
+        self.center[1] += y
+        for i in range(len(self.corners)):
+            self.corners[i][0] += x
+            self.corners[i][1] += y
