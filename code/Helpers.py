@@ -3,6 +3,7 @@ from PIL import Image
 import numpy as np
 import cv2
 import random
+import os
 
 
 RUNTIME_DIR_PATH = "./runtime"
@@ -12,20 +13,21 @@ def ensure_runtime_dir_exists(func):
     """
     Creates the runtime dir if it does not exist.
     """
-    def wrapper():
-        # TODO: check for dir and such
-        func()
+    def wrapper(*args, **kwargs):
+        if not os.path.exists(RUNTIME_DIR_PATH):
+            os.mkdir(RUNTIME_DIR_PATH)
+        func(*args, **kwargs)
     return wrapper
 
 
-# @ensure_runtime_dir_exists
-def save_frame_to_runtime_dir(frame):
+@ensure_runtime_dir_exists
+def save_frame_to_runtime_dir(frame, name=None):
     """
     Saves a frame to the runtime dir.
     :param frame: THe frame to save.
     """
     data = Image.fromarray(frame)
-    path = f"{RUNTIME_DIR_PATH}/frame-{log.elapsed_time_raw()}.jpg"
+    path = f"{RUNTIME_DIR_PATH}/{name if name is not None else log.elapsed_time_raw()}.jpg"
     log.info(f"Saving frame to {path}")
     data.save(path)
 
@@ -58,3 +60,23 @@ def draw_markers(frame, markers, point_only=False, primary_color=(100, 255, 0), 
                 cv2.line(frame, tuple(marker.corners[i]), tuple(marker.corners[(i + 1) % 4]), primary_color, 3)
             cv2.putText(frame, marker.id, tuple(marker.corners[0]), cv2.FONT_HERSHEY_SIMPLEX, 1, secondary_color, 3)
         cv2.drawMarker(frame, tuple(marker.center), primary_color, cv2.MARKER_CROSS, 20, 3)
+
+
+def draw_visible_square(frame, square_data):
+    id = square_data['id']
+    corners = np.array([
+        [int(x), int(y)]
+        for x, y in square_data['corners']
+    ])
+    p0 = (corners[0] + corners[1]) / 2
+    p1 = (corners[2] + corners[3]) / 2
+    center = (p0 + p1) / 2
+    cv2.polylines(
+        frame,
+        [corners.reshape((-1, 1, 2))],
+        True,
+        (240, 120, 40),
+        3
+    )
+    cv2.putText(frame, id, tuple([int(center[0]), int(center[1])]), cv2.FONT_HERSHEY_SIMPLEX, 1, (240, 120, 40), 3)
+
