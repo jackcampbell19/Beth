@@ -1,4 +1,4 @@
-from Exceptions import BoardPieceViolation
+from src.misc.Exceptions import BoardPieceViolation
 
 
 class Board:

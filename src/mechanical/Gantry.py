@@ -1,8 +1,8 @@
 import random
 import numpy as np
-from CatFoot import Stepper, Servo, Electromagnet
 
-from Log import log
+from src.mechanical.CatFoot import Stepper, Servo, Electromagnet
+from src.misc.Log import log
 
 
 class Gantry:

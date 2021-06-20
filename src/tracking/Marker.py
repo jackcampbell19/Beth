@@ -1,6 +1,6 @@
 import numpy as np
 import cv2.aruco as aruco
-from Log import log
+from src.misc.Log import log
 
 
 class Marker:

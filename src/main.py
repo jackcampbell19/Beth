@@ -1,14 +1,18 @@
+import pathlib
 import json
-
-from Board import Board, KeyPosition, Square
-from Camera import Camera
-from Gantry import Gantry
-from Helpers import *
-from Marker import Marker
-from sys import argv
-from Exceptions import BoardPieceViolation
 import time
+from sys import argv, path
 
+src = pathlib.Path(__file__).parent.absolute()
+path.append(str(src.parent.absolute()))
+
+from src.tracking.Board import Board, KeyPosition, Square
+from src.tracking.Marker import Marker
+from src.mechanical.Camera import Camera
+from src.mechanical.Gantry import Gantry
+from src.misc.Exceptions import BoardPieceViolation
+from src.misc.Helpers import *
+from src.misc.Log import log
 
 """
 Initialize global objects/variables using the config file.
@@ -16,7 +20,7 @@ Initialize global objects/variables using the config file.
 log.info('Initializing components.')
 SAVE_OUTPUT = False
 # Read the config file
-f = open("config.json")
+f = open(str(src.parent.joinpath('config.json').absolute()))
 config = json.load(f)
 f.close()
 # Extract global variables from the config file
@@ -61,7 +65,6 @@ gantry = Gantry(
     z_sig_pin=config['gantry']['pins']['z']['sig'],
     grip_sig_pin=config['gantry']['pins']['grip']['sig']
 )
-
 
 """
 Define main functions.
@@ -180,7 +183,6 @@ def exe_main():
     z_down()
     gantry.release_grip()
     z_up()
-
 
 
 if __name__ == "__main__":

@@ -1,4 +1,12 @@
-import RPi.GPIO as gpio
+import sys
+from src.misc.Log import log
+
+if "--mock-gpio" in sys.argv:
+    log.info("--mock-gpio enabled. All GPIO setup and output will be mocked.")
+    from src.misc.MockGPIO import MockGPIO as gpio
+else:
+    import RPi.GPIO as gpio
+
 import time
 import math
 

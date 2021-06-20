@@ -1,8 +1,8 @@
 import cv2
 import numpy as np
-from Exceptions import *
+from src.misc.Exceptions import *
 
-from Log import log
+from src.misc.Log import log
 
 
 class Camera:

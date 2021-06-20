@@ -1,4 +1,4 @@
-from Log import log
+from src.misc.Log import log
 from PIL import Image
 import numpy as np
 import cv2
