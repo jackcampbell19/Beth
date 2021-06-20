@@ -3,10 +3,11 @@ import json
 from Board import Board, KeyPosition, Square
 from Camera import Camera
 from Gantry import Gantry
-from Log import log
 from Helpers import *
 from Marker import Marker
 from sys import argv
+from Exceptions import BoardPieceViolation
+import time
 
 
 """
@@ -39,12 +40,6 @@ camera = Camera(
 )
 # Init the board
 board = Board(
-    corner_fids=(
-        config['board-corner-fid-mapping']['top-left'],
-        config['board-corner-fid-mapping']['top-right'],
-        config['board-corner-fid-mapping']['bottom-left'],
-        config['board-corner-fid-mapping']['bottom-right']
-    ),
     fid_to_piece_map=config["fid-piece-mapping"]
 )
 # Init the gantry
@@ -62,7 +57,9 @@ gantry = Gantry(
         config['gantry']['pins']['x']['dir'],
         config['gantry']['pins']['y']['dir'][0],
         config['gantry']['pins']['y']['dir'][1]
-    )
+    ),
+    z_sig_pin=config['gantry']['pins']['z']['sig'],
+    grip_sig_pin=config['gantry']['pins']['grip']['sig']
 )
 
 
@@ -81,8 +78,8 @@ def adjust_markers(markers):
     for marker in markers:
         x_dis, y_dis = marker.center - frame_center
         x_coefficient, y_coefficient = fcc_map[marker.id] if marker.id in fcc_map else (1, 1)
-        x_correction_amount = -(x_coefficient * (x_dis / (camera.frame_size[0] / 2)))
-        y_correction_amount = -(y_coefficient * (y_dis / (camera.frame_size[1] / 2)))
+        x_correction_amount = -(x_coefficient * (x_dis / frame_center[0]))
+        y_correction_amount = -(y_coefficient * (y_dis / frame_center[1]))
         marker.adjust(x_correction_amount, y_correction_amount)
 
 
@@ -96,7 +93,31 @@ def take_snapshot():
     frame = camera.capture_frame()
     markers = Marker.extract_markers(frame)
     adjust_markers(markers)
-    return markers
+    return markers, frame
+
+
+def analyze_board():
+    """
+    Analyzes the board to find where all the pieces are.
+    For each key position, move the gantry to that position, take a
+    snapshot and locate the position of each of the visible pieces.
+    :return: [square_id: fid] A map of square ids to piece ids.
+    """
+    log.info('Analyzing board.')
+    square_contents = {}
+    for key_position in key_positions:
+        x, y = key_position.gantry_position
+        gantry.set_position(x, y)
+        markers, frame = take_snapshot()
+        for marker in markers:
+            piece_id = board.translate_fid_to_piece(marker.id)
+            for square in key_position.visible_squares:
+                if point_lies_in_square(marker.center, square.corners):
+                    if square.id in square_contents and square_contents[square.id] != piece_id:
+                        raise BoardPieceViolation(f"Two pieces found in the same square: {square.id}")
+                    square_contents[square.id] = piece_id
+        log.info(f"Found pieces: {square_contents}")
+    return square_contents
 
 
 """
@@ -107,17 +128,58 @@ Execute main function.
 def exe_main():
     if SAVE_OUTPUT:
         log.SAVE_OUTPUT = True
-        log.info('Save output enabled. All output will be saved.')
+        log.info('Save output enabled.')
     # Perform mechanical calibration
     log.info('Performing gantry calibration.')
     gantry.calibrate()
 
     # TODO: Temporary test code
-    for key_position in key_positions:
-        x, y = key_position.gantry_position
-        gantry.set_position(x, y)
-        frame = camera.capture_frame()
-        save_frame_to_runtime_dir(frame)
+
+    def z_down():
+        gantry.set_z_position(1)
+
+    def z_up():
+        gantry.set_z_position(0)
+
+    def move_origin():
+        gantry.set_position(0, 0)
+
+    def move_pos1():
+        gantry.set_position(1200, 0)
+
+    def move_pos2():
+        gantry.set_position(1000, 1600)
+
+    z_down()
+    gantry.engage_grip()
+    z_up()
+    move_pos1()
+    z_down()
+    gantry.release_grip()
+    z_up()
+    move_origin()
+    move_pos1()
+    z_down()
+    gantry.engage_grip()
+    z_up()
+    move_origin()
+    z_down()
+    gantry.release_grip()
+    z_up()
+    z_down()
+    gantry.engage_grip()
+    z_up()
+    move_pos2()
+    z_down()
+    gantry.release_grip()
+    z_up()
+    z_down()
+    gantry.engage_grip()
+    z_up()
+    move_origin()
+    z_down()
+    gantry.release_grip()
+    z_up()
 
 
 

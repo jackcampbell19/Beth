@@ -1,5 +1,9 @@
 import RPi.GPIO as gpio
 import time
+import math
+
+
+gpio.setmode(gpio.BCM)
 
 
 def p_out(pin, val):
@@ -12,8 +16,39 @@ def p_out(pin, val):
         gpio.output(pin, val)
 
 
-class Stepper:
+class Electromagnet:
 
+    def __init__(self, sig_pin):
+        self.sig_pin = sig_pin
+        gpio.setup(sig_pin, gpio.OUT)
+        self.demagnetize()
+
+    def magnetize(self):
+        gpio.output(self.sig_pin, True)
+
+    def demagnetize(self):
+        gpio.output(self.sig_pin, False)
+
+
+class Servo:
+
+    def __init__(self, sig_pin):
+        gpio.setup(sig_pin, gpio.OUT)
+        self.pin = sig_pin
+        self.pwm = gpio.PWM(sig_pin, 50)
+        self.pwm.start(0)
+
+    def set_angle(self, deg):
+        duty = deg / 18 + 2
+        p_out(self.pin, True)
+        self.pwm.ChangeDutyCycle(duty)
+        time.sleep(1)
+
+    def cleanup(self):
+        self.pwm.stop()
+
+
+class Stepper:
     # Resolution modes
     MODE_FULL = 0
     MODE_HALF = 1
@@ -21,6 +56,9 @@ class Stepper:
     MODE_EIGHTH = 3
     MODE_SIXTEENTH = 4
     MODE_THIRTY_TWO = 5
+
+    # Acceleration functions
+    ACCELERATION_SIN = lambda x: math.sin(x * math.pi)
 
     def __init__(self, stp_pin, dir_pin=None, en_pin=None, rst_pin=None,
                  slp_pin=None, m0_pin=None, m1_pin=None, m2_pin=None):
@@ -44,7 +82,6 @@ class Stepper:
         self.m0 = m0_pin
         self.m1 = m1_pin
         self.m2 = m2_pin
-        gpio.setmode(gpio.BCM)
         for pin in [self.stp, self.dir, self.en, self.rst, self.slp, self.m0, self.m1, self.m2]:
             if pin is not None:
                 gpio.setup(pin, gpio.OUT)
@@ -157,3 +194,22 @@ class Stepper:
             time.sleep(falling_delay)
         for stepper in steppers:
             stepper.update_current_position_with_target()
+
+    @staticmethod
+    def move(stepper, min_delay=0.0055, max_delay=0.008, acceleration_function=ACCELERATION_SIN):
+        """
+        Move all steppers together one step at a time until each stepper reaches its target position.
+        :param acceleration_function:
+        :param max_delay:
+        :param min_delay:
+        :param stepper: {Stepper} Steppers to move.
+        """
+        required_steps = stepper.get_required_steps_for_target()
+        p_out(stepper.dir, stepper.get_required_direction_for_target())
+        for current_step in range(required_steps):
+            delay = min_delay + acceleration_function(current_step / required_steps) * (max_delay - min_delay)
+            p_out(stepper.stp, True)
+            time.sleep(delay)
+            p_out(stepper.stp, False)
+            time.sleep(delay)
+        stepper.update_current_position_with_target()

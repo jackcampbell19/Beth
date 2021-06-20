@@ -1,6 +1,6 @@
 import random
 import numpy as np
-from CatFoot import Stepper
+from CatFoot import Stepper, Servo, Electromagnet
 
 from Log import log
 
@@ -10,12 +10,13 @@ class Gantry:
     The gantry system used for physical movement.
     """
 
-    def __init__(self, size, stp_pins, dir_pins):
+    def __init__(self, size, stp_pins, dir_pins, z_sig_pin, grip_sig_pin):
         """
         Initializes the gantry with the given hardware specifications.
         :param size: {(int, int)} (x_size, y_size)
         :param stp_pins: {(int, int, int)} (x_stp, y0_stp, y1_stp)
         :param dir_pins: {(int, int, int)} (x_dir, y0_dir, y1_dir)
+        :param z_sig_pin: {int} Servo motor signal pin.
         """
         self.x_size, self.y_size = size
         x_stp, y0_stp, y1_stp = stp_pins
@@ -23,6 +24,8 @@ class Gantry:
         self.x_stepper = Stepper(stp_pin=x_stp, dir_pin=x_dir)
         self.y0_stepper = Stepper(stp_pin=y0_stp, dir_pin=y0_dir)
         self.y1_stepper = Stepper(stp_pin=y1_stp, dir_pin=y1_dir)
+        self.z_servo = Servo(sig_pin=z_sig_pin)
+        self.gripper = Electromagnet(sig_pin=grip_sig_pin)
 
     def calibrate(self):
         """
@@ -47,6 +50,20 @@ class Gantry:
             self.y0_stepper.set_position_abs(int(y))
             self.y1_stepper.set_position_abs(int(y))
         Stepper.move_concurrently(self.x_stepper, self.y0_stepper, self.y1_stepper)
+
+    def set_z_position(self, p):
+        """
+        Sets the Z position based on the input {p}. If p == 1 the z servo will
+        be fully extended, if p == 0 the z servo will be fully retracted.
+        """
+        log.info(f"Setting z to {int(p * 100)}% extension.")
+        self.z_servo.set_angle(180 * (1 - p))
+
+    def engage_grip(self):
+        self.gripper.magnetize()
+
+    def release_grip(self):
+        self.gripper.demagnetize()
 
     def move_to_random_position(self):
         """

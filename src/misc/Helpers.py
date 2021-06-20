@@ -63,10 +63,9 @@ def draw_markers(frame, markers, point_only=False, primary_color=(100, 255, 0), 
 
 
 def draw_visible_square(frame, square_data):
-    id = square_data['id']
     corners = np.array([
         [int(x), int(y)]
-        for x, y in square_data['corners']
+        for x, y in square_data.corners
     ])
     p0 = (corners[0] + corners[1]) / 2
     p1 = (corners[2] + corners[3]) / 2
@@ -78,5 +77,15 @@ def draw_visible_square(frame, square_data):
         (240, 120, 40),
         3
     )
-    cv2.putText(frame, id, tuple([int(center[0]), int(center[1])]), cv2.FONT_HERSHEY_SIMPLEX, 1, (240, 120, 40), 3)
+    cv2.putText(frame, square_data.id, tuple([int(center[0]), int(center[1])]),
+                cv2.FONT_HERSHEY_SIMPLEX, 1, (240, 120, 40), 3)
 
+
+def point_lies_in_square(point, square_corners):
+    x, y = point
+    p0, p1, p2, p3 = square_corners
+    square_lines = [p0 + p1, p1 + p2, p2 + p3, p3 + p0]
+    return all([
+        ((y - y0) * (x1 - x0) - (x - x0) * (y1 - y0) > 0)
+        for x0, y0, x1, y1 in square_lines
+    ])
