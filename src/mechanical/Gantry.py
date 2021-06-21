@@ -56,6 +56,7 @@ class Gantry:
         Sets the Z position based on the input {p}. If p == 1 the z servo will
         be fully extended, if p == 0 the z servo will be fully retracted.
         """
+        p = max(0, min(p, 1))
         log.info(f"Setting z to {int(p * 100)}% extension.")
         self.z_servo.set_angle(180 * (1 - p))
 

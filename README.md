@@ -1,48 +1,16 @@
+## Execution Parameters
+#### `--mock-gpio`
+* This will import a mock GPIO class in place of the RPi GPIO control class. Allows for execution on a laptop (or any device that does not support GPIO).
+* Example: `python3 main.py --mock-gpio`
 
-### Definitions
+#### `--remote-control`
+* This will enable control of the machine from a terminal.
+* Example: `python3 main.py --remote-control`
 
-- **Gantry** - 3 dimensional mechanical structure used to move the camera and interact with the chess pieces.
+#### `--save-output`
+* This will save all output to the runtime directory.
+* Example: `python3 main.py --save-output`
 
-- **fid** - 'Fiducial ID' aka. a marker identifier.
-
-### Structure
-
-- [calibration] - A directory containing code and images used to calibrate the machine.
-
-- [runtime] - A directory containing any files generated during the operation of the program.
-
-### config.json
-The config.json file contains all variable information about the machine. This includes dimensions, fiducial associations, and calibration coefficients. The structure is as follows:
-
-```
-{
-  "board-corner-fid-mapping": {
-    "top-left": <fid>,
-    "top-right": <fid>,
-    "bottom-left": <fid>,
-    "bottom-right": <fid>
-  },
-  "fid-piece-mapping": {
-    <fid>: <chess-piece>,
-    ...
-  },
-  "camera": {
-    "width": <width>,
-    "height": <height>,
-    "calibration": {
-      "k": <k-array>,
-      "d": <d-array>,
-      "fid-correction-coefficients": {
-        "default": [<x-coeff>, <y-coeff>],
-        <fid>: [<x-coeff>, <y-coeff>],
-        ...
-      }
-    }
-  },
-  "gantry": {
-    "size": [<width>, <height>],
-    "x-pins": [<stp>, <dir>],
-    "y-pins": [[<stp>, <dir>], ...]
-  }
-}
-```
+#### `--capture-key-position-images`
+* Captures the key position images for visible square calibration.
+* Example: `python3 main.py --capture-key-position-images`

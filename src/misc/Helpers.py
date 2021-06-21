@@ -2,11 +2,15 @@ from src.misc.Log import log
 from PIL import Image
 import numpy as np
 import cv2
-import random
 import os
 
+import pathlib
 
-RUNTIME_DIR_PATH = "./runtime"
+CURRENT_DIR = pathlib.Path(__file__).absolute()
+RUNTIME_DIR_PATH = CURRENT_DIR.parent.parent.joinpath('runtime').absolute()
+CALIBRATION_DIR = RUNTIME_DIR_PATH.joinpath('calibration').absolute()
+IMAGES_DIR = RUNTIME_DIR_PATH.joinpath('images').absolute()
+LOG_DIR = RUNTIME_DIR_PATH.joinpath('logs').absolute()
 
 
 def ensure_runtime_dir_exists(func):
@@ -14,20 +18,24 @@ def ensure_runtime_dir_exists(func):
     Creates the runtime dir if it does not exist.
     """
     def wrapper(*args, **kwargs):
-        if not os.path.exists(RUNTIME_DIR_PATH):
-            os.mkdir(RUNTIME_DIR_PATH)
+        for path in [RUNTIME_DIR_PATH, CALIBRATION_DIR, IMAGES_DIR, LOG_DIR]:
+            if not os.path.exists(path):
+                os.mkdir(path)
         func(*args, **kwargs)
     return wrapper
 
 
 @ensure_runtime_dir_exists
-def save_frame_to_runtime_dir(frame, name=None):
+def save_frame_to_runtime_dir(frame, calibration=False, name=None):
     """
     Saves a frame to the runtime dir.
-    :param frame: THe frame to save.
+    :param calibration: If true the file will be saved to the calibration dir
+    :param name: Name of the file
+    :param frame: THe frame to save
     """
     data = Image.fromarray(frame)
-    path = f"{RUNTIME_DIR_PATH}/{name if name is not None else log.elapsed_time_raw()}.jpg"
+    path = \
+        f"{CALIBRATION_DIR if calibration else IMAGES_DIR}/{name if name is not None else log.elapsed_time_raw()}.jpg"
     log.info(f"Saving frame to {path}")
     data.save(path)
 

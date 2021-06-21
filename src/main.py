@@ -128,63 +128,49 @@ Execute main function.
 """
 
 
+def exe_remote_control():
+    """
+    Allows the user to control the machine from a terminal.
+    """
+    while True:
+        input_str = input('x,y,z: ')
+        try:
+            x, y, z = map(float, input_str.split(','))
+            x, y = map(int, [x, y])
+        except ValueError:
+            print('Input not valid.')
+            continue
+        gantry.set_position(x, y)
+        gantry.set_z_position(z)
+
+
+def exe_capture_key_position_images():
+    gantry.calibrate()
+    for key_position in key_positions:
+        x, y = key_position.gantry_position
+        gantry.set_position(x, y)
+        frame = camera.capture_frame()
+        save_frame_to_runtime_dir(frame, calibration=True, name=f"key-position-{x}x{y}.jpg")
+
+
 def exe_main():
-    if SAVE_OUTPUT:
-        log.SAVE_OUTPUT = True
-        log.info('Save output enabled.')
     # Perform mechanical calibration
     log.info('Performing gantry calibration.')
     gantry.calibrate()
 
-    # TODO: Temporary test code
-
-    def z_down():
-        gantry.set_z_position(1)
-
-    def z_up():
-        gantry.set_z_position(0)
-
-    def move_origin():
-        gantry.set_position(0, 0)
-
-    def move_pos1():
-        gantry.set_position(1200, 0)
-
-    def move_pos2():
-        gantry.set_position(1000, 1600)
-
-    z_down()
-    gantry.engage_grip()
-    z_up()
-    move_pos1()
-    z_down()
-    gantry.release_grip()
-    z_up()
-    move_origin()
-    move_pos1()
-    z_down()
-    gantry.engage_grip()
-    z_up()
-    move_origin()
-    z_down()
-    gantry.release_grip()
-    z_up()
-    z_down()
-    gantry.engage_grip()
-    z_up()
-    move_pos2()
-    z_down()
-    gantry.release_grip()
-    z_up()
-    z_down()
-    gantry.engage_grip()
-    z_up()
-    move_origin()
-    z_down()
-    gantry.release_grip()
-    z_up()
-
 
 if __name__ == "__main__":
     SAVE_OUTPUT = '--save-output' in argv
-    exe_main()
+    if SAVE_OUTPUT:
+        log.SAVE_OUTPUT = True
+        log.info('Save output enabled.')
+    try:
+        if '--remote-control' in argv:
+            exe_remote_control()
+        elif '--capture-key-position-images' in argv:
+            exe_capture_key_position_images()
+        else:
+            exe_main()
+    except KeyboardInterrupt:
+        log.info('Program ended due to KeyboardInterrupt.')
+        exit(0)
