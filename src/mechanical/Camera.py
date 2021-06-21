@@ -48,12 +48,24 @@ class Camera:
         :return: The corrected frame.
         """
         log.info('Correcting camera distortion on frame.')
+        # m1, m2 = cv2.fisheye.initUndistortRectifyMap(self.k,
+        #                                              self.d,
+        #                                              np.eye(3),
+        #                                              self.k,
+        #                                              self.frame_size,
+        #                                              cv2.CV_16SC2)
+        new_k = cv2.fisheye.estimateNewCameraMatrixForUndistortRectify(self.k,
+                                                                       self.d,
+                                                                       self.
+                                                                       frame_size,
+                                                                       np.eye(3),
+                                                                       balance=1)
         m1, m2 = cv2.fisheye.initUndistortRectifyMap(self.k,
                                                      self.d,
                                                      np.eye(3),
-                                                     self.k,
+                                                     new_k,
                                                      self.frame_size,
-                                                     cv2.CV_16SC2)
+                                                     cv2.CV_32FC1)
         undistorted_img = cv2.remap(frame, m1, m2, interpolation=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
         return undistorted_img
 

@@ -46,15 +46,11 @@
   },
   "key-positions": [
     {
-      "gantry-position": [2262, 0],
+      "gantry-position": [2300, 550],
       "visible-squares": []
     },
     {
-      "gantry-position": [2262, 1366],
-      "visible-squares": []
-    },
-    {
-      "gantry-position": [2262, 2732],
+      "gantry-position": [2300, 2200],
       "visible-squares": []
     }
   ]
