@@ -1,9 +1,16 @@
 import cv2
 import numpy as np
 import glob
+import pathlib
+
+from src.misc.Log import log
+from src.tracking.Marker import Marker
 
 
-def calibrate(checkerboard_dimensions=(6, 9)):
+CALIBRATION_DIR = pathlib.Path(__file__).parent.parent.parent.joinpath('runtime').joinpath('calibration').absolute()
+
+
+def calibrate_distortion_correction_k_d(checkerboard_dimensions=(6, 9)):
     sub_pix_criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.1)
     calibration_flags = \
         cv2.fisheye.CALIB_RECOMPUTE_EXTRINSIC + cv2.fisheye.CALIB_CHECK_COND + cv2.fisheye.CALIB_FIX_SKEW
@@ -50,6 +57,25 @@ def calibrate(checkerboard_dimensions=(6, 9)):
     print("d=" + str(d.tolist()))
 
 
-if __name__ == '__main__':
-    assert int(cv2.__version__[0]) >= 3, 'The fisheye module requires opencv version >= 3.0.0'
-    calibrate()
+def calculate_fid_correction_coefficients():
+    top_img = CALIBRATION_DIR.joinpath('fcc-top.jpg')
+    base_img = CALIBRATION_DIR.joinpath('fcc-base.jpg')
+    if not top_img.exists() or not base_img.exists():
+        log.error('Missing calibration images.')
+        return
+    top_frame = cv2.imread(str(top_img.absolute()))
+    base_frame = cv2.imread(str(base_img.absolute()))
+    top_markers = Marker.extract_markers(top_frame)
+    base_markers = Marker.extract_markers(base_frame)
+    present_top_marker_ids = [m.id for m in top_markers]
+    present_base_marker_ids = [m.id for m in base_markers]
+    if len(present_top_marker_ids) == 0 \
+            or len(set(present_top_marker_ids)) != len(present_top_marker_ids)\
+            or set(present_base_marker_ids) != set(present_top_marker_ids):
+        log.error('Marker images are not valid or do not appear consistent.')
+        return
+    fcc = {}
+    for tm in top_markers:
+        bm = [m for m in base_markers if m.id == tm.id][0]
+        vector = bm.center - tm.center
+        # fcc[tm.id] =

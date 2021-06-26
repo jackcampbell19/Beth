@@ -1,6 +1,5 @@
 import pathlib
 import json
-import time
 from sys import argv, path
 
 src = pathlib.Path(__file__).parent.absolute()
@@ -10,9 +9,11 @@ from src.tracking.Board import Board, KeyPosition, Square
 from src.tracking.Marker import Marker
 from src.mechanical.Camera import Camera
 from src.mechanical.Gantry import Gantry
-from src.misc.Exceptions import BoardPieceViolation
+from src.misc.Exceptions import BoardPieceViolation, InvalidMove
 from src.misc.Helpers import *
+from src.calibration.Calibration import calculate_fid_correction_coefficients
 from src.misc.Log import log
+import time
 
 """
 Initialize global objects/variables using the config file.
@@ -44,7 +45,11 @@ camera = Camera(
 )
 # Init the board
 board = Board(
-    fid_to_piece_map=config["fid-piece-mapping"]
+    fid_to_piece_map=config['fid-piece-mapping'],
+    a1_position=config['known-square-positions']['a1'],
+    h1_position=config['known-square-positions']['h1'],
+    a8_position=config['known-square-positions']['a8'],
+    h8_position=config['known-square-positions']['h8']
 )
 # Init the gantry
 gantry = Gantry(
@@ -69,6 +74,15 @@ gantry = Gantry(
 """
 Define main functions.
 """
+
+
+def make_move(move):
+    if len(move) != 4:
+        raise InvalidMove(f"{move}")
+    s, e = move[:2], move[2:]
+    sx, sy = board.get_square_location(s)
+    ex, ey = board.get_square_location(e)
+    gantry.set_position(sx, sy)
 
 
 def adjust_markers(markers):
@@ -128,6 +142,11 @@ Execute main function.
 """
 
 
+def exe_capture_calibration_image(name):
+    frame = camera.capture_frame()
+    save_frame_to_runtime_dir(frame, name=name, calibration=True)
+
+
 def exe_remote_control():
     """
     Allows the user to control the machine from a terminal.
@@ -150,16 +169,29 @@ def exe_capture_key_position_images():
         x, y = key_position.gantry_position
         gantry.set_position(x, y)
         frame = camera.capture_frame()
-        save_frame_to_runtime_dir(frame, calibration=True, name=f"key-position-{x}x{y}.jpg")
+        save_frame_to_runtime_dir(frame, calibration=True, name=f"key-position-{x}x{y}")
+    gantry.set_position(0, 0)
 
 
 def exe_main():
     # Perform mechanical calibration
     log.info('Performing gantry calibration.')
     gantry.calibrate()
+    for square in ['a1', 'b1', 'c1', 'd1', 'e1', 'f1', 'g1', 'h1',
+                   'a2', 'b2', 'c2', 'd2', 'e2', 'f2', 'g2', 'h2',
+                   'a3', 'b3', 'c3', 'd3', 'e3', 'f3', 'g3', 'h3',
+                   'a4', 'b4', 'c4', 'd4', 'e4', 'f4', 'g4', 'h4',
+                   'a5', 'b5', 'c5', 'd5', 'e5', 'f5', 'g5', 'h5',
+                   'a6', 'b6', 'c6', 'd6', 'e6', 'f6', 'g6', 'h6',
+                   'a7', 'b7', 'c7', 'd7', 'e7', 'f7', 'g7', 'h7',
+                   'a8', 'b8', 'c8', 'd8', 'e8', 'f8', 'g8', 'h8']:
+        x, y = board.get_square_location(square)
+        gantry.set_position(x, y)
+        time.sleep(0.5)
 
 
 if __name__ == "__main__":
+    log.info(f"Program begin, argv: {argv}")
     SAVE_OUTPUT = '--save-output' in argv
     if SAVE_OUTPUT:
         log.SAVE_OUTPUT = True
@@ -167,10 +199,18 @@ if __name__ == "__main__":
     try:
         if '--remote-control' in argv:
             exe_remote_control()
-        elif '--capture-key-position-images' in argv:
+        elif '--capture-key-positions' in argv:
             exe_capture_key_position_images()
+        elif '--capture-fcc-top' in argv:
+            exe_capture_calibration_image('fcc-top')
+        elif '--capture-fcc-base' in argv:
+            exe_capture_calibration_image('fcc-base')
+        elif '--calculate-fcc' in argv:
+            calculate_fid_correction_coefficients()
         else:
             exe_main()
     except KeyboardInterrupt:
+        gantry.set_position(0, 0)
+        gantry.set_z_position(0)
         log.info('Program ended due to KeyboardInterrupt.')
         exit(0)

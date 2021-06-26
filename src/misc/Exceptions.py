@@ -5,3 +5,7 @@ class CameraError(Exception):
 
 class BoardPieceViolation(Exception):
     pass
+
+
+class InvalidMove(Exception):
+    pass

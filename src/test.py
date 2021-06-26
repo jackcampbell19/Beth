@@ -1,17 +1,17 @@
 from stockfish import Stockfish
-from Board import Board
+from tracking.Board import Board
 
 stockfish = Stockfish()
 
-print(stockfish.get_board_visual())
-
-fen = Board.get_fen_position({'c4': 'P', 'g4': 'N', 'e5': 'Q', 'e3': 'K', 'a3': 'B', 'h3': 'R', 'd7': 'k'})
-print(fen)
-
-stockfish.set_fen_position(fen)
-print(stockfish.get_board_visual())
-
-move = stockfish.get_best_move_time(3000)
-print(f"Move: {move}")
-
-
+moves = []
+while True:
+    fen = stockfish.get_fen_position()
+    move = stockfish.get_best_move_time(200)
+    moves.append(move)
+    if move is None:
+        break
+    stockfish.set_position(moves)
+    fen_2 = stockfish.get_fen_position()
+    print()
+    print(move)
+    print(Board.get_move_from_fen_positions(fen, fen_2))

@@ -11,6 +11,15 @@
 * This will save all output to the runtime directory.
 * Example: `python3 main.py --save-output`
 
-#### `--capture-key-position-images`
+#### `--capture-key-positions`
 * Captures the key position images for visible square calibration.
 * Example: `python3 main.py --capture-key-position-images`
+
+#### `--capture-fcc-top`
+* Captures an images assuming that the pieces are placed on the board. Used for calculating the fid coefficient map.
+
+#### `--capture-fcc-base`
+* Captures an images assuming that there are base markers for each piece placed on the board. Used for calculating the fid coefficient map.
+
+#### `--calculate-fcc`
+* Calculates the fid correction coefficients using the captured images.
