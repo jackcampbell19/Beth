@@ -178,9 +178,9 @@ def exe_main():
     log.info('Performing gantry calibration.')
     gantry.calibrate()
     #
-    gantry.set_position(2500, 2500)
-    gantry.set_position(2500, 0)
-    gantry.set_position(0, 2500)
+    gantry.set_position(1500, 1500)
+    gantry.set_position(1500, 0)
+    gantry.set_position(0, 1500)
     gantry.set_position(0, 0)
     # for square in ['a1', 'b1', 'c1', 'd1', 'e1', 'f1', 'g1', 'h1',
     #                'a2', 'b2', 'c2', 'd2', 'e2', 'f2', 'g2', 'h2',
