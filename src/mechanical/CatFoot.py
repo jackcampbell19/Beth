@@ -224,7 +224,6 @@ class Stepper:
             for i in range(len(steppers)):
                 if completed[i] or c_step % stepper_step_frequency[i] != 0:
                     continue
-                print(f"{c_step} - Step {i}")
                 p_out(steppers[i].stp, True)
                 step_counts[i] += 1
             time.sleep(delay)
@@ -233,7 +232,6 @@ class Stepper:
                     continue
                 p_out(steppers[i].stp, False)
                 if step_counts[i] == required_steps[i]:
-                    print(f"{c_step} - Done {i}")
                     completed[i] = True
                     steppers[i].update_current_position_with_target()
             time.sleep(delay)
