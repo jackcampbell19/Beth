@@ -86,6 +86,8 @@ class Stepper:
     # Acceleration functions
     ACCELERATION_SIN = lambda x: -math.sin(x * math.pi) + 1
     ACCELERATION_QUAD = lambda x: (2 * x - 1) ** 4
+    ACCELERATION_LINEAR = lambda x: x
+    ACCELERATION_CONST = lambda x: 0
 
     def __init__(self, stp_pin, dir_pin=None, en_pin=None, rst_pin=None,
                  slp_pin=None, m0_pin=None, m1_pin=None, m2_pin=None):
@@ -192,6 +194,10 @@ class Stepper:
 
     def update_current_position_with_target(self):
         self._current_position = self._target_position
+        self._target_position = None
+
+    def reset(self):
+        self._current_position = 0
         self._target_position = None
 
     @staticmethod

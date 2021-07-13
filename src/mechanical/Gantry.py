@@ -1,7 +1,7 @@
 import random
 import numpy as np
 
-from src.mechanical.CatFoot import Stepper, Servo, Electromagnet
+from src.mechanical.CatFoot import Stepper, Servo, Electromagnet, Button
 from src.misc.Log import log
 
 
@@ -10,7 +10,7 @@ class Gantry:
     The gantry system used for physical movement.
     """
 
-    def __init__(self, size, stp_pins, dir_pins, z_sig_pin, grip_sig_pin):
+    def __init__(self, size, stp_pins, dir_pins, z_sig_pin, grip_sig_pin, x_stop_pin):
         """
         Initializes the gantry with the given hardware specifications.
         :param size: {(int, int)} (x_size, y_size)
@@ -26,12 +26,18 @@ class Gantry:
         self.y1_stepper = Stepper(stp_pin=y1_stp, dir_pin=y1_dir)
         self.z_servo = Servo(sig_pin=z_sig_pin)
         self.gripper = Electromagnet(sig_pin=grip_sig_pin)
+        self.x_stop = Button(pin=x_stop_pin)
 
     def calibrate(self):
         """
         Calibrates the gantry and sets the current position to [0, 0].
         """
-        pass
+        self.x_stepper.set_position_rel(50)
+        Stepper.move(self.x_stepper, acceleration_function=Stepper.ACCELERATION_SIN)
+        while not self.x_stop.is_pressed():
+            self.x_stepper.set_position_rel(-2)
+            Stepper.move(self.x_stepper, acceleration_function=Stepper.ACCELERATION_CONST)
+        self.x_stepper.reset()
 
     def set_position(self, x, y, rel=False):
         """

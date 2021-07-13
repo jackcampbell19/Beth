@@ -14,7 +14,6 @@ from src.misc.Helpers import *
 from src.calibration.Calibration import calculate_fid_correction_coefficients
 from src.misc.Log import log
 
-from src.mechanical.CatFoot import Button
 
 """
 Initialize global objects/variables using the config file.
@@ -179,15 +178,7 @@ def exe_main():
     log.info('Performing gantry calibration.')
     gantry.calibrate()
     #
-    button = Button(16)
-    i = 0
-    while True:
-        if button.is_pressed():
-            print("pressed!", i)
-            i += 1
-        else:
-            print('no')
-        button.delay()
+
     # for square in ['a1', 'b1', 'c1', 'd1', 'e1', 'f1', 'g1', 'h1',
     #                'a2', 'b2', 'c2', 'd2', 'e2', 'f2', 'g2', 'h2',
     #                'a3', 'b3', 'c3', 'd3', 'e3', 'f3', 'g3', 'h3',
