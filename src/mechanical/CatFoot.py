@@ -35,7 +35,7 @@ class Button:
 
     @staticmethod
     def delay():
-        time.sleep(0.05)
+        time.sleep(0.01)
 
     def wait_until_pressed(self):
         while not self.is_pressed():
