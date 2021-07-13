@@ -259,5 +259,5 @@ class Stepper:
                 if step_counts[i] == required_steps[i]:
                     completed[i] = True
                     steppers[i].update_current_position_with_target()
-                    print(steppers[i]._target_position)
+                    print(steppers[i]._current_position)
             time.sleep(delay)
