@@ -66,7 +66,7 @@ class Stepper:
     MODE_THIRTY_TWO = 5
 
     # Acceleration functions
-    ACCELERATION_SIN = lambda x: math.sin(x * math.pi)
+    ACCELERATION_SIN = lambda x: -math.sin(x * math.pi) + 1
 
     def __init__(self, stp_pin, dir_pin=None, en_pin=None, rst_pin=None,
                  slp_pin=None, m0_pin=None, m1_pin=None, m2_pin=None):
@@ -221,7 +221,6 @@ class Stepper:
             p_out(stepper.dir, stepper.get_required_direction_for_target())
         for c_step in range(max_steps):
             delay = min_delay + acceleration_function(c_step / max_steps) * (max_delay - min_delay)
-            print(delay)
             for i in range(len(steppers)):
                 if completed[i] or c_step % stepper_step_frequency[i] != 0:
                     continue
