@@ -36,7 +36,7 @@ class Gantry:
         self.x_stepper.set_position_rel(150)
         Stepper.move(self.x_stepper, acceleration_function=Stepper.ACCELERATION_SIN)
         while not self.x_stop.is_pressed():
-            self.x_stepper.set_position_rel(-2)
+            self.x_stepper.set_position_rel(-3)
             Stepper.move(self.x_stepper, acceleration_function=Stepper.ACCELERATION_CONST,
                          min_delay=0.004, max_delay=0.004)
         log.info('X stop found.')
