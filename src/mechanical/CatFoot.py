@@ -204,20 +204,36 @@ class Stepper:
             stepper.update_current_position_with_target()
 
     @staticmethod
-    def move(stepper, min_delay=0.0055, max_delay=0.008, acceleration_function=ACCELERATION_SIN):
+    def move(*steppers, min_delay=0.0055, max_delay=0.008, acceleration_function=ACCELERATION_SIN):
         """
         Move all steppers together one step at a time until each stepper reaches its target position.
         :param acceleration_function:
         :param max_delay:
         :param min_delay:
-        :param stepper: {Stepper} Steppers to move.
+        :param steppers: {list(Stepper)} Steppers to move.
         """
-        required_steps = stepper.get_required_steps_for_target()
-        p_out(stepper.dir, stepper.get_required_direction_for_target())
-        for current_step in range(required_steps):
-            delay = min_delay + acceleration_function(current_step / required_steps) * (max_delay - min_delay)
-            p_out(stepper.stp, True)
+        required_steps = [s.get_required_steps_for_target() for s in steppers]
+        completed = [False for _ in range(len(steppers))]
+        max_steps = max(required_steps)
+        stepper_step_frequency = list(map(lambda x: int(math.floor(max_steps / x)), required_steps))
+        step_counts = [0 for _ in range(len(steppers))]
+        for stepper in steppers:
+            p_out(stepper.dir, stepper.get_required_direction_for_target())
+        for c_step in range(max_steps):
+            delay = min_delay + acceleration_function(c_step / max_steps) * (max_delay - min_delay)
+            for i in range(len(steppers)):
+                if completed[i] or c_step % stepper_step_frequency[i] != 0:
+                    continue
+                print(f"{c_step} - Step {i}")
+                p_out(steppers[i].stp, True)
+                step_counts[i] += 1
             time.sleep(delay)
-            p_out(stepper.stp, False)
+            for i in range(len(steppers)):
+                if completed[i] or c_step % stepper_step_frequency[i] != 0:
+                    continue
+                p_out(steppers[i].stp, False)
+                if step_counts[i] == required_steps[i]:
+                    print(f"{c_step} - Done {i}")
+                    completed[i] = True
+                    steppers[i].update_current_position_with_target()
             time.sleep(delay)
-        stepper.update_current_position_with_target()

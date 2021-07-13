@@ -49,7 +49,7 @@ class Gantry:
             self.x_stepper.set_position_abs(int(x))
             self.y0_stepper.set_position_abs(int(y))
             self.y1_stepper.set_position_abs(int(y))
-        Stepper.move_concurrently(self.x_stepper, self.y0_stepper, self.y1_stepper)
+        Stepper.move(self.x_stepper, self.y0_stepper, self.y1_stepper)
 
     def set_z_position(self, p):
         """
