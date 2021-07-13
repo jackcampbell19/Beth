@@ -67,6 +67,7 @@ class Stepper:
 
     # Acceleration functions
     ACCELERATION_SIN = lambda x: -math.sin(x * math.pi) + 1
+    ACCELERATION_QUAD = lambda x: (2 * x - 1) ** 4
 
     def __init__(self, stp_pin, dir_pin=None, en_pin=None, rst_pin=None,
                  slp_pin=None, m0_pin=None, m1_pin=None, m2_pin=None):
@@ -204,7 +205,7 @@ class Stepper:
             stepper.update_current_position_with_target()
 
     @staticmethod
-    def move(*steppers, min_delay=0.0004, max_delay=0.00075, acceleration_function=ACCELERATION_SIN):
+    def move(*steppers, min_delay=0.0004, max_delay=0.0008, acceleration_function=ACCELERATION_QUAD):
         """
         Move all steppers together one step at a time until each stepper reaches its target position.
         :param acceleration_function:
