@@ -35,9 +35,11 @@ class Gantry:
         log.info('Starting calibration sequence.')
         self.x_stepper.set_position_rel(50)
         Stepper.move(self.x_stepper, acceleration_function=Stepper.ACCELERATION_SIN, min_delay=0.008, max_delay=0.0016)
+        import time
         while not self.x_stop.is_pressed():
             self.x_stepper.set_position_rel(-2)
             Stepper.move(self.x_stepper, acceleration_function=Stepper.ACCELERATION_CONST, min_delay=0.02, max_delay=0.02)
+            time.sleep(0.003)
         log.info('X stop found.')
         self.x_stepper.reset()
 
