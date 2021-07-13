@@ -204,7 +204,7 @@ class Stepper:
             stepper.update_current_position_with_target()
 
     @staticmethod
-    def move(*steppers, min_delay=0.0004, max_delay=0.00085, acceleration_function=ACCELERATION_SIN):
+    def move(*steppers, min_delay=0.0004, max_delay=0.00075, acceleration_function=ACCELERATION_SIN):
         """
         Move all steppers together one step at a time until each stepper reaches its target position.
         :param acceleration_function:
