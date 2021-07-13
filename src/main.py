@@ -181,11 +181,13 @@ def exe_main():
     gantry.set_z_position(0)
     gantry.set_position(1800, 1800)
     gantry.set_z_position(1)
+    gantry.engage_grip()
     gantry.set_z_position(0)
     gantry.set_position(1800, 0)
-    gantry.set_position(0, 1800)
     gantry.set_z_position(1)
+    gantry.engage_grip()
     gantry.set_z_position(0)
+    gantry.set_position(0, 1800)
     gantry.set_position(0, 0)
     # for square in ['a1', 'b1', 'c1', 'd1', 'e1', 'f1', 'g1', 'h1',
     #                'a2', 'b2', 'c2', 'd2', 'e2', 'f2', 'g2', 'h2',
