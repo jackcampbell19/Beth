@@ -204,7 +204,7 @@ class Stepper:
             stepper.update_current_position_with_target()
 
     @staticmethod
-    def move(*steppers, min_delay=0.0055, max_delay=0.008, acceleration_function=ACCELERATION_SIN):
+    def move(*steppers, min_delay=0.00055, max_delay=0.0008, acceleration_function=ACCELERATION_SIN):
         """
         Move all steppers together one step at a time until each stepper reaches its target position.
         :param acceleration_function:
@@ -213,9 +213,9 @@ class Stepper:
         :param steppers: {list(Stepper)} Steppers to move.
         """
         required_steps = [s.get_required_steps_for_target() for s in steppers]
-        completed = [False for _ in range(len(steppers))]
+        completed = [False if required_steps[i] > 0 else True for i in range(len(steppers))]
         max_steps = max(required_steps)
-        stepper_step_frequency = list(map(lambda x: int(math.floor(max_steps / x)), required_steps))
+        stepper_step_frequency = list(map(lambda x: int(math.floor(max_steps / x)) if x > 0 else 0, required_steps))
         step_counts = [0 for _ in range(len(steppers))]
         for stepper in steppers:
             p_out(stepper.dir, stepper.get_required_direction_for_target())
