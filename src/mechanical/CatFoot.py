@@ -238,7 +238,6 @@ class Stepper:
         :param steppers: {list(Stepper)} Steppers to move.
         """
         required_steps = [s.get_required_steps_for_target() for s in steppers]
-        print(required_steps)
         completed = [False if required_steps[i] > 0 else True for i in range(len(steppers))]
         max_steps = max(required_steps)
         stepper_step_frequency = list(map(lambda x: int(math.floor(max_steps / x)) if x > 0 else 0, required_steps))
@@ -260,4 +259,5 @@ class Stepper:
                 if step_counts[i] == required_steps[i]:
                     completed[i] = True
                     steppers[i].update_current_position_with_target()
+                    print(steppers[i]._target_position)
             time.sleep(delay)
