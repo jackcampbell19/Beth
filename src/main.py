@@ -68,7 +68,8 @@ gantry = Gantry(
         config['gantry']['pins']['y']['dir'][1]
     ),
     z_sig_pin=config['gantry']['pins']['z']['sig'],
-    grip_sig_pin=config['gantry']['pins']['grip']['sig']
+    grip_sig_pin=config['gantry']['pins']['grip']['sig'],
+    x_stop_pin=config['gantry']['pins']['stops']['x']
 )
 
 """
