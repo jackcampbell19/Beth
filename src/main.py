@@ -185,7 +185,7 @@ def exe_main():
     gantry.set_z_position(0)
     gantry.set_position(1800, 0)
     gantry.set_z_position(1)
-    gantry.engage_grip()
+    gantry.release_grip()
     gantry.set_z_position(0)
     gantry.set_position(0, 1800)
     gantry.set_position(0, 0)
