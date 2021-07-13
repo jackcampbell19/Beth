@@ -40,11 +40,11 @@ class Gantry:
             Stepper.move(self.x_stepper, acceleration_function=Stepper.ACCELERATION_CONST,
                          min_delay=0.004, max_delay=0.004)
         log.info('X stop found.')
+        self.x_stepper.reset()
         self.x_stepper.set_position_abs(self.x_size)
         Stepper.move(self.x_stepper)
         self.x_stepper.set_position_abs(0)
         Stepper.move(self.x_stepper)
-        self.x_stepper.reset()
 
     def set_position(self, x, y, rel=False):
         """
