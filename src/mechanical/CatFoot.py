@@ -24,6 +24,24 @@ def p_out(pin, val):
         gpio.output(pin, val)
 
 
+class Button:
+
+    def __init__(self, pin):
+        self.pin = pin
+        gpio.setup(pin, gpio.IN, pull_up_down=gpio.PUD_UP)
+
+    def is_pressed(self):
+        return not gpio.input(self.pin)
+
+    @staticmethod
+    def delay():
+        time.sleep(0.3)
+
+    def wait_until_pressed(self):
+        while not self.is_pressed():
+            self.delay()
+
+
 class Electromagnet:
 
     def __init__(self, sig_pin):

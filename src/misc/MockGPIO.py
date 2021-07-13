@@ -5,6 +5,8 @@ class MockGPIO:
     """
     BCM = ""
     OUT = ""
+    IN = ""
+    PUD_UP = ""
 
     @staticmethod
     def output(x, y):
@@ -15,7 +17,11 @@ class MockGPIO:
         pass
 
     @staticmethod
-    def setup(x, y):
+    def setup(x, y, **kwargs):
+        pass
+
+    @staticmethod
+    def input(x):
         pass
 
     @staticmethod

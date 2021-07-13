@@ -13,7 +13,8 @@ from src.misc.Exceptions import BoardPieceViolation, InvalidMove
 from src.misc.Helpers import *
 from src.calibration.Calibration import calculate_fid_correction_coefficients
 from src.misc.Log import log
-import time
+
+from src.mechanical.CatFoot import Button
 
 """
 Initialize global objects/variables using the config file.
@@ -178,17 +179,13 @@ def exe_main():
     log.info('Performing gantry calibration.')
     gantry.calibrate()
     #
-    gantry.set_z_position(0)
-    gantry.set_position(1800, 1800)
-    gantry.set_z_position(1)
-    gantry.engage_grip()
-    gantry.set_z_position(0)
-    gantry.set_position(1800, 0)
-    gantry.set_z_position(1)
-    gantry.release_grip()
-    gantry.set_z_position(0)
-    gantry.set_position(0, 1800)
-    gantry.set_position(0, 0)
+    button = Button(16)
+    i = 0
+    while True:
+        if button.is_pressed():
+            print("pressed!", i)
+            i += 1
+        button.delay()
     # for square in ['a1', 'b1', 'c1', 'd1', 'e1', 'f1', 'g1', 'h1',
     #                'a2', 'b2', 'c2', 'd2', 'e2', 'f2', 'g2', 'h2',
     #                'a3', 'b3', 'c3', 'd3', 'e3', 'f3', 'g3', 'h3',
