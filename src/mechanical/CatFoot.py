@@ -189,7 +189,7 @@ class Stepper:
         :param position: {int} The relative position.
         """
         if self._target_position is None:
-            self._target_position = 0
+            self._target_position = self._current_position
         self._target_position += position
 
     def update_current_position_with_target(self):
