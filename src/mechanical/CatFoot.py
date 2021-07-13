@@ -50,7 +50,7 @@ class Servo:
         duty = deg / 18 + 2
         p_out(self.pin, True)
         self.pwm.ChangeDutyCycle(duty)
-        time.sleep(1)
+        time.sleep(0.75)
 
     def cleanup(self):
         self.pwm.stop()
