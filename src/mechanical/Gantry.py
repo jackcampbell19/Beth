@@ -32,11 +32,13 @@ class Gantry:
         """
         Calibrates the gantry and sets the current position to [0, 0].
         """
+        log.info('Starting calibration sequence.')
         self.x_stepper.set_position_rel(50)
         Stepper.move(self.x_stepper, acceleration_function=Stepper.ACCELERATION_SIN)
         while not self.x_stop.is_pressed():
             self.x_stepper.set_position_rel(-2)
             Stepper.move(self.x_stepper, acceleration_function=Stepper.ACCELERATION_CONST)
+        log.info('X stop found.')
         self.x_stepper.reset()
 
     def set_position(self, x, y, rel=False):
