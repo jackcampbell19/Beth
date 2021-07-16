@@ -69,7 +69,9 @@ gantry = Gantry(
     ),
     z_sig_pin=config['gantry']['pins']['z']['sig'],
     grip_sig_pin=config['gantry']['pins']['grip']['sig'],
-    x_stop_pin=config['gantry']['pins']['stops']['x']
+    x_stop_pin=config['gantry']['pins']['stops']['x'],
+    y0_stop_pin=config['gantry']['pins']['stops']['y0'],
+    y1_stop_pin=config['gantry']['pins']['stops']['y1']
 )
 
 """
@@ -194,11 +196,6 @@ def exe_main():
 
 
 if __name__ == "__main__":
-    gantry.y0_stepper.set_position_abs(50)
-    gantry.y0_stepper.move(gantry.y0_stepper)
-    gantry.y0_stepper.set_position_abs(0)
-    gantry.y0_stepper.move(gantry.y0_stepper)
-    exit()
     log.info(f"Program begin, argv: {argv}")
     SAVE_OUTPUT = '--save-output' in argv
     if SAVE_OUTPUT:

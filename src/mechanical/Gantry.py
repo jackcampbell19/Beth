@@ -1,5 +1,4 @@
 import random
-import numpy as np
 
 from src.mechanical.CatFoot import Stepper, Servo, Electromagnet, Button
 from src.misc.Log import log
@@ -10,7 +9,7 @@ class Gantry:
     The gantry system used for physical movement.
     """
 
-    def __init__(self, size, stp_pins, dir_pins, z_sig_pin, grip_sig_pin, x_stop_pin):
+    def __init__(self, size, stp_pins, dir_pins, z_sig_pin, grip_sig_pin, x_stop_pin, y0_stop_pin, y1_stop_pin):
         """
         Initializes the gantry with the given hardware specifications.
         :param size: {(int, int)} (x_size, y_size)
@@ -27,13 +26,16 @@ class Gantry:
         self.z_servo = Servo(sig_pin=z_sig_pin)
         self.gripper = Electromagnet(sig_pin=grip_sig_pin)
         self.x_stop = Button(pin=x_stop_pin)
+        self.y0_stop = Button(pin=y0_stop_pin)
+        self.y1_stop = Button(pin=y1_stop_pin)
 
     def calibrate(self):
         """
         Calibrates the gantry and sets the current position to [0, 0].
         """
+        base_distance = 150
         log.info('Starting calibration sequence.')
-        self.x_stepper.set_position_rel(150)
+        self.x_stepper.set_position_rel(base_distance)
         Stepper.move(self.x_stepper, acceleration_function=Stepper.ACCELERATION_SIN)
         while not self.x_stop.is_pressed():
             self.x_stepper.set_position_rel(-3)
@@ -45,6 +47,27 @@ class Gantry:
         Stepper.move(self.x_stepper)
         self.x_stepper.set_position_abs(0)
         Stepper.move(self.x_stepper)
+        self.y0_stepper.set_position_rel(base_distance)
+        self.y1_stepper.set_position_rel(base_distance)
+        Stepper.move(self.y0_stepper, self.y1_stepper, acceleration_function=Stepper.ACCELERATION_SIN)
+        while True:
+            if self.y0_stop.is_pressed() and self.y1_stop.is_pressed():
+                break
+            if not self.y0_stop.is_pressed():
+                self.y0_stepper.set_position_rel(-3)
+            if not self.y1_stop.is_pressed():
+                self.y1_stepper.set_position_rel(-3)
+            Stepper.move(self.y0_stepper, self.y1_stepper, acceleration_function=Stepper.ACCELERATION_CONST,
+                         min_delay=0.004, max_delay=0.004)
+        log.info('Y stops found.')
+        self.y0_stepper.reset()
+        self.y1_stepper.reset()
+        self.y0_stepper.set_position_abs(self.y_size)
+        self.y1_stepper.set_position_abs(self.y_size)
+        Stepper.move(self.y0_stepper, self.y1_stepper)
+        self.y0_stepper.set_position_abs(0)
+        self.y1_stepper.set_position_abs(0)
+        Stepper.move(self.y0_stepper, self.y1_stepper)
 
     def set_position(self, x, y, rel=False):
         """
