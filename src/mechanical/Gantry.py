@@ -43,10 +43,6 @@ class Gantry:
                          min_delay=0.004, max_delay=0.004)
         log.info('X stop found.')
         self.x_stepper.reset()
-        self.x_stepper.set_position_abs(self.x_size)
-        Stepper.move(self.x_stepper)
-        self.x_stepper.set_position_abs(0)
-        Stepper.move(self.x_stepper)
         self.y0_stepper.set_position_rel(base_distance)
         self.y1_stepper.set_position_rel(base_distance)
         Stepper.move(self.y0_stepper, self.y1_stepper, acceleration_function=Stepper.ACCELERATION_SIN)
@@ -64,10 +60,12 @@ class Gantry:
         self.y1_stepper.reset()
         self.y0_stepper.set_position_abs(self.y_size)
         self.y1_stepper.set_position_abs(self.y_size)
-        Stepper.move(self.y0_stepper, self.y1_stepper)
+        self.x_stepper.set_position_abs(self.x_size)
+        Stepper.move(self.y0_stepper, self.y1_stepper, self.x_stepper)
         self.y0_stepper.set_position_abs(0)
         self.y1_stepper.set_position_abs(0)
-        Stepper.move(self.y0_stepper, self.y1_stepper)
+        self.x_stepper.set_position_abs(0)
+        Stepper.move(self.y0_stepper, self.y1_stepper, self.x_stepper)
 
     def set_position(self, x, y, rel=False):
         """
