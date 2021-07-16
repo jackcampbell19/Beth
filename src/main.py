@@ -211,7 +211,7 @@ if __name__ == "__main__":
         elif '--capture-fcc-base' in argv:
             exe_capture_calibration_image('fcc-base')
         elif '--calculate-fcc' in argv:
-            calculate_fid_correction_coefficients()
+            calculate_fid_correction_coefficients(camera.frame_center)
         else:
             exe_main()
     except KeyboardInterrupt:
