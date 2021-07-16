@@ -194,6 +194,11 @@ def exe_main():
 
 
 if __name__ == "__main__":
+    gantry.y0_stepper.set_position_abs(50)
+    gantry.y0_stepper.move(gantry.y0_stepper)
+    gantry.y0_stepper.set_position_abs(0)
+    gantry.y0_stepper.move(gantry.y0_stepper)
+    exit()
     log.info(f"Program begin, argv: {argv}")
     SAVE_OUTPUT = '--save-output' in argv
     if SAVE_OUTPUT:
