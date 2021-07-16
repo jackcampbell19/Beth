@@ -48,12 +48,6 @@ class Camera:
         :return: The corrected frame.
         """
         log.info('Correcting camera distortion on frame.')
-        # m1, m2 = cv2.fisheye.initUndistortRectifyMap(self.k,
-        #                                              self.d,
-        #                                              np.eye(3),
-        #                                              self.k,
-        #                                              self.frame_size,
-        #                                              cv2.CV_16SC2)
         new_k = cv2.fisheye.estimateNewCameraMatrixForUndistortRectify(self.k,
                                                                        self.d,
                                                                        self.

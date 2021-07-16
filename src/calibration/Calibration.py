@@ -57,7 +57,8 @@ def calibrate_distortion_correction_k_d(checkerboard_dimensions=(6, 9)):
     print("d=" + str(d.tolist()))
 
 
-def calculate_fid_correction_coefficients():
+def calculate_fid_correction_coefficients(frame_size):
+    frame_center = [x / 2 for x in frame_size]
     top_img = CALIBRATION_DIR.joinpath('fcc-top.jpg')
     base_img = CALIBRATION_DIR.joinpath('fcc-base.jpg')
     if not top_img.exists() or not base_img.exists():
@@ -78,4 +79,8 @@ def calculate_fid_correction_coefficients():
     for tm in top_markers:
         bm = [m for m in base_markers if m.id == tm.id][0]
         vector = bm.center - tm.center
-        # fcc[tm.id] =
+        top_dis = tm.center - frame_center
+        x_correction_amount = -(vector[0] * (frame_center[0] / top_dis[0]))
+        y_correction_amount = -(vector[1] * (frame_center[1] / top_dis[1]))
+        fcc[tm.id] = [x_correction_amount, y_correction_amount]
+    print(fcc)
