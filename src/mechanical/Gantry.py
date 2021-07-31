@@ -31,7 +31,7 @@ class Gantry:
 
     def calibrate(self):
         """
-        Calibrates the gantry and sets the current position to [0, 0].
+        Calibrates the gantry and sets the current position to [0, 0]. Returns
         """
         base_distance = 150
         log.info('Starting calibration sequence.')
@@ -42,6 +42,7 @@ class Gantry:
             Stepper.move(self.x_stepper, acceleration_function=Stepper.ACCELERATION_CONST,
                          min_delay=0.004, max_delay=0.004)
         log.info('X stop found.')
+        x_pos = -self.x_stepper.get_current_position()
         self.x_stepper.reset()
         self.y0_stepper.set_position_rel(base_distance)
         self.y1_stepper.set_position_rel(base_distance)
@@ -56,6 +57,9 @@ class Gantry:
             Stepper.move(self.y0_stepper, self.y1_stepper, acceleration_function=Stepper.ACCELERATION_CONST,
                          min_delay=0.004, max_delay=0.004)
         log.info('Y stops found.')
+        y0_pos = -self.y0_stepper.get_current_position()
+        y1_pos = -self.y1_stepper.get_current_position()
+        y_pos = int(round((y0_pos + y1_pos) / 2))
         self.y0_stepper.reset()
         self.y1_stepper.reset()
         self.y0_stepper.set_position_abs(self.y_size)
@@ -66,6 +70,7 @@ class Gantry:
         self.y1_stepper.set_position_abs(0)
         self.x_stepper.set_position_abs(0)
         Stepper.move(self.y0_stepper, self.y1_stepper, self.x_stepper)
+        return x_pos, y_pos
 
     def set_position(self, x, y, rel=False):
         """

@@ -1,4 +1,8 @@
 ## Execution Parameters
+
+#### `--help`
+* Prints out the available commands.
+
 #### `--mock-gpio`
 * This will import a mock GPIO class in place of the RPi GPIO control class. Allows for execution on a laptop (or any device that does not support GPIO).
 * Example: `python3 main.py --mock-gpio`
@@ -23,3 +27,6 @@
 
 #### `--calculate-fcc`
 * Calculates the fid correction coefficients using the captured images.
+
+#### `--determine-current-position`
+* Determines the current position of the gantry by calibrating itself from where it is manually positioned.

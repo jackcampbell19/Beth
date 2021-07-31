@@ -16,6 +16,18 @@ from src.misc.Log import log
 
 
 """
+Print out the help message if requested and terminate the program.
+"""
+if '--help' in argv:
+    readme = open(str(src.parent.joinpath('README.md').absolute()))
+    print('Flags:')
+    for line in readme.readlines():
+        if line.startswith('#### `--'):
+            print('  • ', line[6:-2])
+    exit(0)
+
+
+"""
 Initialize global objects/variables using the config file.
 """
 log.info('Initializing components.')
@@ -176,10 +188,15 @@ def exe_capture_key_position_images():
     gantry.set_position(0, 0)
 
 
+def exe_determine_current_position():
+    x, y = gantry.calibrate()
+    log.info(f"Gantry was at position {x}, {y}")
+
+
 def exe_main():
     # Perform mechanical calibration
     log.info('Performing gantry calibration.')
-    gantry.calibrate()
+    _ = gantry.calibrate()
     #
 
     # for square in ['a1', 'b1', 'c1', 'd1', 'e1', 'f1', 'g1', 'h1',
@@ -196,6 +213,10 @@ def exe_main():
 
 
 if __name__ == "__main__":
+    gantry.y0_stop.wait_until_pressed()
+    gantry.y0_stepper.set_position_abs(20)
+    gantry.y0_stepper.move(gantry.y0_stepper, min_delay=0.01, max_delay=0.01)
+    exit(0)
     log.info(f"Program begin, argv: {argv}")
     SAVE_OUTPUT = '--save-output' in argv
     if SAVE_OUTPUT:
@@ -212,6 +233,8 @@ if __name__ == "__main__":
             exe_capture_calibration_image('fcc-base')
         elif '--calculate-fcc' in argv:
             calculate_fid_correction_coefficients(camera.frame_center)
+        elif '--determine-current-position' in argv:
+            exe_determine_current_position()
         else:
             exe_main()
     except KeyboardInterrupt:
