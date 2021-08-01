@@ -213,6 +213,13 @@ def exe_main():
 
 
 if __name__ == "__main__":
+
+    for x in range(10):
+        frame = camera.capture_frame(correct_distortion=False)
+        save_frame_to_runtime_dir(frame)
+    exit(0)
+
+
     log.info(f"Program begin, argv: {argv}")
     SAVE_OUTPUT = '--save-output' in argv
     if SAVE_OUTPUT:
