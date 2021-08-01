@@ -28,6 +28,10 @@ class MockGPIO:
     def PWM(x, y):
         return MockPWM()
 
+    @staticmethod
+    def cleanup():
+        pass
+
 
 class MockPWM:
 

@@ -14,6 +14,13 @@ import math
 gpio.setmode(gpio.BCM)
 
 
+def cleanup():
+    """
+    Cleans up gpio
+    """
+    gpio.cleanup()
+
+
 def p_out(pin, val):
     """
     Validates the pin is not None and then writes the value.

@@ -9,6 +9,7 @@ from src.tracking.Board import Board, KeyPosition, Square
 from src.tracking.Marker import Marker
 from src.mechanical.Camera import Camera
 from src.mechanical.Gantry import Gantry
+from src.mechanical.CatFoot import cleanup
 from src.misc.Exceptions import BoardPieceViolation, InvalidMove
 from src.misc.Helpers import *
 from src.calibration.Calibration import calculate_fid_correction_coefficients
@@ -239,7 +240,10 @@ if __name__ == "__main__":
         else:
             exe_main()
     except KeyboardInterrupt:
-        gantry.set_position(0, 0)
-        gantry.set_z_position(0)
         log.info('Program ended due to KeyboardInterrupt.')
+        cleanup()
         exit(0)
+    # Return gantry to origin and cleanup gpio
+    gantry.set_position(0, 0)
+    gantry.set_z_position(0)
+    cleanup()
