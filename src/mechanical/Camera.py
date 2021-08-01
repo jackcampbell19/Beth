@@ -37,6 +37,7 @@ class Camera:
         camera = cv2.VideoCapture(self.index)
         camera.set(cv2.CAP_PROP_FRAME_WIDTH, self.frame_size[0])
         camera.set(cv2.CAP_PROP_FRAME_HEIGHT, self.frame_size[1])
+        camera.set(cv2.CAP_PROP_BUFFERSIZE, 3)
         for _ in range(init_frames):
             camera.read()
         return camera
