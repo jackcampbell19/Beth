@@ -26,7 +26,6 @@ class Camera:
         self.mock_frame_path = None
         self.latest_frame = None
         self.frame_center = np.array([self.frame_size[0] / 2, self.frame_size[1] / 2])
-        self.camera = self.generate_camera()
 
     def generate_camera(self, init_frames=10):
         """
@@ -77,8 +76,7 @@ class Camera:
             return frame
         log.info(f"Capturing frame from camera with"
                  f"{'' if correct_distortion else ' no'} distortion correction.")
-        # camera = self.generate_camera()
-        camera = self.camera
+        camera = self.generate_camera()
         ret, frame = camera.read()
         for _ in range(100):
             if ret:
@@ -86,7 +84,7 @@ class Camera:
             ret, frame = camera.read()
         if not ret:
             raise CameraError('Failed to read from from camera.')
-        # camera.release()
+        camera.release()
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         if correct_distortion:
             frame = self.correct_distortion(frame)
