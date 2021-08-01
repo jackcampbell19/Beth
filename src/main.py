@@ -13,6 +13,7 @@ from src.misc.Exceptions import BoardPieceViolation, InvalidMove
 from src.misc.Helpers import *
 from src.calibration.Calibration import calculate_fid_correction_coefficients
 from src.misc.Log import log
+from random import randint
 
 
 """
@@ -213,15 +214,6 @@ def exe_main():
 
 
 if __name__ == "__main__":
-
-    import time
-    for x in range(10):
-        frame = camera.capture_frame(correct_distortion=False)
-        save_frame_to_runtime_dir(frame)
-        time.sleep(1)
-    exit(0)
-
-
     log.info(f"Program begin, argv: {argv}")
     SAVE_OUTPUT = '--save-output' in argv
     if SAVE_OUTPUT:
@@ -240,6 +232,10 @@ if __name__ == "__main__":
             calculate_fid_correction_coefficients(camera.frame_center)
         elif '--determine-current-position' in argv:
             exe_determine_current_position()
+        elif '--capture-frame' in argv:
+            save_frame_to_runtime_dir(
+                camera.capture_frame(correct_distortion=False), name=f"cf-{randint(0, 1000)}-{log.elapsed_time_raw()}"
+            )
         else:
             exe_main()
     except KeyboardInterrupt:
