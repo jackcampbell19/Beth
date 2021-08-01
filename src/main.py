@@ -215,7 +215,7 @@ def exe_main():
 if __name__ == "__main__":
 
     import time
-    for x in range(10):
+    for x in range(30):
         frame = camera.capture_frame(correct_distortion=False)
         save_frame_to_runtime_dir(frame)
         time.sleep(1)

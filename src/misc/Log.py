@@ -14,6 +14,9 @@ class Log:
         return f"\033[37m({self.elapsed_time_raw()}ms)\033[0m"
 
     def elapsed_time_raw(self):
+        """
+        Elapsed time in milliseconds.
+        """
         return int((time.time() - self.INIT_TIME) * 1000)
 
     def info(self, message):
