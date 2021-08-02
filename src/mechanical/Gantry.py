@@ -100,9 +100,11 @@ class Gantry:
         self.z_servo.set_angle(180 * (1 - p))
 
     def engage_grip(self):
+        log.info('Engaging grip.')
         self.gripper.magnetize()
 
     def release_grip(self):
+        log.info('Releasing grip.')
         self.gripper.demagnetize()
 
     def move_to_random_position(self):
