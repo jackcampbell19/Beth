@@ -98,7 +98,7 @@ def calculate_fid_correction_coefficients(frame_size):
         x_correction_amount = -(vector[0] * (frame_center[0] / top_dis[0]))
         y_correction_amount = -(vector[1] * (frame_center[1] / top_dis[1]))
         fcc[tm.id] = [x_correction_amount, y_correction_amount]
-    log.info("FCC:\n", fcc)
+    log.info(f"FCC:\n{fcc}")
 
 
 if __name__ == '__main__':
