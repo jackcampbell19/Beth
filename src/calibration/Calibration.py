@@ -94,6 +94,7 @@ def calculate_fid_correction_coefficients(frame_size):
         bm = [m for m in base_markers if m.id == tm.id][0]
         print(tm.center, bm.center)
         vector = bm.center - tm.center
+        print(vector)
         top_dis = tm.center - frame_center
         x_correction_amount = -(vector[0] * (frame_center[0] / top_dis[0]))
         y_correction_amount = -(vector[1] * (frame_center[1] / top_dis[1]))
