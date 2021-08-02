@@ -160,8 +160,7 @@ Execute main function.
 
 
 def exe_capture_calibration_image(name):
-    frame = camera.capture_frame()
-    save_frame_to_runtime_dir(frame, name=name, calibration=True)
+    save_frame_to_runtime_dir(camera.capture_frame(), name=name, calibration=True)
 
 
 def exe_remote_control():
