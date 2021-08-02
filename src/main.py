@@ -234,8 +234,14 @@ if __name__ == "__main__":
         elif '--determine-current-position' in argv:
             exe_determine_current_position()
         elif '--capture-frame' in argv:
+            frame = camera.capture_frame(correct_distortion='--no-distortion' not in argv)
+            if '--show-markers' in argv:
+                markers = Marker.extract_markers(frame)
+                draw_markers(frame, markers, point_only=True, primary_color=(255, 0, 0), secondary_color=(255, 0, 0))
+                adjust_markers(markers)
+                draw_markers(frame, markers, point_only=True, primary_color=(0, 255, 0), secondary_color=(0, 255, 0))
             save_frame_to_runtime_dir(
-                camera.capture_frame(correct_distortion=False), name=f"cf-{randint(0, 1000)}-{log.elapsed_time_raw()}"
+                frame, name=f"cf-{randint(0, 1000)}-{log.elapsed_time_raw()}"
             )
         else:
             exe_main()
