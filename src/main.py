@@ -251,4 +251,5 @@ if __name__ == "__main__":
     # Return gantry to origin and cleanup gpio
     gantry.set_position(0, 0)
     gantry.set_z_position(0)
+    gantry.release_grip()
     cleanup()
