@@ -167,6 +167,7 @@ def exe_remote_control():
     """
     Allows the user to control the machine from a terminal.
     """
+    gantry.calibrate()
     while True:
         mode = input('Coordinate / Position (c/p): ')
         if mode == 'c':
