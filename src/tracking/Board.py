@@ -1,6 +1,8 @@
 from src.misc.Exceptions import BoardPieceViolation
 import numpy as np
 
+from src.misc.Log import log
+
 
 class Board:
     """
@@ -20,12 +22,18 @@ class Board:
         return self.fid_to_piece_map[fid]
 
     def get_square_location(self, sid):
+        if len(sid) != 2:
+            log.error(f"Square ID \"{sid}\" is invalid. Returning (0, 0).")
+            return 0, 0
         col, row = sid
         col, row = int(ord(col) - ord('a')), int(row) - 1
-        tx = self.a8_position + (self.h8_position - self.a8_position) * (1 / 7 * col)
-        bx = self.a1_position + (self.h1_position - self.a1_position) * (1 / 7 * col)
-        x, y = bx + (tx - bx) * (1 / 7 * row)
-        return int(x), int(y)
+        if 0 <= col < 8 and 0 <= row < 8:
+            tx = self.a8_position + (self.h8_position - self.a8_position) * (1 / 7 * col)
+            bx = self.a1_position + (self.h1_position - self.a1_position) * (1 / 7 * col)
+            x, y = bx + (tx - bx) * (1 / 7 * row)
+            return int(x), int(y)
+        log.error(f"Square ID \"{sid}\" is out of bounds. Returning (0, 0).")
+        return 0, 0
 
     @staticmethod
     def square_ids_to_fen(square_ids):
