@@ -168,15 +168,25 @@ def exe_remote_control():
     Allows the user to control the machine from a terminal.
     """
     while True:
-        input_str = input('x,y,z: ')
-        try:
-            x, y, z = map(float, input_str.split(','))
-            x, y = map(int, [x, y])
-        except ValueError:
-            print('Input not valid.')
-            continue
-        gantry.set_position(x, y)
-        gantry.set_z_position(z)
+        mode = input('Coordinate / Position (c/p): ')
+        if mode == 'c':
+            while True:
+                input_str = input('x,y,z: ')
+                try:
+                    x, y, z = map(float, input_str.split(','))
+                    x, y = map(int, [x, y])
+                except ValueError:
+                    print('Input not valid.')
+                    continue
+                gantry.set_position(x, y)
+                gantry.set_z_position(z)
+        elif mode == 'p':
+            while True:
+                position = input('Position: ')
+                x, y = board.get_square_location(position)
+                gantry.set_position(x, y)
+        else:
+            print('Inout not valid.')
 
 
 def exe_capture_key_position_images():
