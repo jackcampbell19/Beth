@@ -108,13 +108,11 @@ def adjust_markers(markers):
     :param markers: {list(markers)} List of markers
     :return: Adjusted markers
     """
-    frame_center = [x / 2 for x in camera.frame_size]
+    frame_center = np.array([x / 2 for x in camera.frame_size])
     for marker in markers:
-        x_dis, y_dis = marker.center - frame_center
-        x_coefficient, y_coefficient = fcc_map[marker.id] if marker.id in fcc_map else (1, 1)
-        x_correction_amount = -(x_coefficient * (x_dis / frame_center[0]))
-        y_correction_amount = -(y_coefficient * (y_dis / frame_center[1]))
-        marker.adjust(x_correction_amount, y_correction_amount)
+        vector = marker.center - frame_center
+        coefficient = fcc_map[marker.id] if marker.id in fcc_map else 1
+        marker.center = np.array([int(x) for x in frame_center + vector * coefficient])
 
 
 def take_snapshot():
@@ -173,6 +171,8 @@ def exe_remote_control():
         if mode == 'c':
             while True:
                 input_str = input('x,y,z: ')
+                if input_str == 'back':
+                    break
                 try:
                     x, y, z = map(float, input_str.split(','))
                     x, y = map(int, [x, y])
@@ -184,6 +184,8 @@ def exe_remote_control():
         elif mode == 'p':
             while True:
                 position = input('Position: ')
+                if position == 'back':
+                    break
                 x, y = board.get_square_location(position)
                 gantry.set_position(x, y)
         else:
@@ -191,12 +193,12 @@ def exe_remote_control():
 
 
 def exe_capture_key_position_images():
-    gantry.calibrate()
+    _ = gantry.calibrate()
     for key_position in key_positions:
         x, y = key_position.gantry_position
         gantry.set_position(x, y)
-        frame = camera.capture_frame()
-        save_frame_to_runtime_dir(frame, calibration=True, name=f"key-position-{x}x{y}")
+        frm = camera.capture_frame()
+        save_frame_to_runtime_dir(frm, calibration=True, name=f"key-position-{x}x{y}")
     gantry.set_position(0, 0)
 
 
@@ -209,19 +211,6 @@ def exe_main():
     # Perform mechanical calibration
     log.info('Performing gantry calibration.')
     _ = gantry.calibrate()
-    #
-
-    # for square in ['a1', 'b1', 'c1', 'd1', 'e1', 'f1', 'g1', 'h1',
-    #                'a2', 'b2', 'c2', 'd2', 'e2', 'f2', 'g2', 'h2',
-    #                'a3', 'b3', 'c3', 'd3', 'e3', 'f3', 'g3', 'h3',
-    #                'a4', 'b4', 'c4', 'd4', 'e4', 'f4', 'g4', 'h4',
-    #                'a5', 'b5', 'c5', 'd5', 'e5', 'f5', 'g5', 'h5',
-    #                'a6', 'b6', 'c6', 'd6', 'e6', 'f6', 'g6', 'h6',
-    #                'a7', 'b7', 'c7', 'd7', 'e7', 'f7', 'g7', 'h7',
-    #                'a8', 'b8', 'c8', 'd8', 'e8', 'f8', 'g8', 'h8']:
-    #     x, y = board.get_square_location(square)
-    #     gantry.set_position(x, y)
-    #     time.sleep(0.5)
 
 
 if __name__ == "__main__":
@@ -244,7 +233,8 @@ if __name__ == "__main__":
         elif '--determine-current-position' in argv:
             exe_determine_current_position()
         elif '--capture-frame' in argv:
-            frame = camera.capture_frame(correct_distortion='--no-distortion' not in argv)
+            camera.mock_frame_path = str(CALIBRATION_DIR.joinpath('all.jpg').absolute())
+            frame = camera.capture_frame(correct_distortion='--raw-image' not in argv)
             if '--show-markers' in argv:
                 markers = Marker.extract_markers(frame)
                 draw_markers(frame, markers, point_only=True, primary_color=(255, 0, 0), secondary_color=(255, 0, 0))

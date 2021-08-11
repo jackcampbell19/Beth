@@ -2,8 +2,12 @@ import cv2
 import numpy as np
 import glob
 import pathlib
+import time
+import json
 
 from sys import argv, path
+
+from src.misc.Helpers import draw_markers
 
 src = pathlib.Path(__file__).parent.absolute().parent.absolute()
 path.append(str(src.parent.absolute()))
@@ -71,8 +75,7 @@ def calibrate_distortion_correction_k_d(image_dir, checkerboard_dimensions=(6, 9
     print("d=" + str(d.tolist()))
 
 
-def calculate_fid_correction_coefficients(frame_size):
-    frame_center = [x / 2 for x in frame_size]
+def calculate_fid_correction_coefficients(frame_center):
     top_img = CALIBRATION_DIR.joinpath('fcc-top.jpg')
     base_img = CALIBRATION_DIR.joinpath('fcc-base.jpg')
     if not top_img.exists() or not base_img.exists():
@@ -82,6 +85,14 @@ def calculate_fid_correction_coefficients(frame_size):
     base_frame = cv2.imread(str(base_img.absolute()))
     top_markers = Marker.extract_markers(top_frame)
     base_markers = Marker.extract_markers(base_frame)
+    draw_markers(top_frame, top_markers)
+    cv2.imshow('top', top_frame)
+    cv2.waitKey(1)
+    time.sleep(1)
+    draw_markers(base_frame, base_markers)
+    cv2.imshow('base', base_frame)
+    cv2.waitKey(1)
+    time.sleep(1)
     present_top_marker_ids = [m.id for m in top_markers]
     present_base_marker_ids = [m.id for m in base_markers]
     if len(present_top_marker_ids) == 0 \
@@ -92,12 +103,12 @@ def calculate_fid_correction_coefficients(frame_size):
     fcc = {}
     for tm in top_markers:
         bm = [m for m in base_markers if m.id == tm.id][0]
-        vector = bm.center - tm.center
-        top_dis = tm.center - frame_center
-        x_correction_amount = -(vector[0] * (frame_center[0] / top_dis[0]))
-        y_coeff = -(vector[1] * (frame_center[1] / top_dis[1]))
-        fcc[tm.id] = [x_correction_amount, y_coeff]
-    log.info(f"FCC:\n{fcc}")
+        bv = bm.center - frame_center
+        tv = tm.center - frame_center
+        x = bv[0] / tv[0]
+        y = bv[1] / tv[1]
+        fcc[tm.id] = (x + y) / 2
+    log.info(f"FCC:\n{json.dumps(fcc)}")
 
 
 if __name__ == '__main__':
