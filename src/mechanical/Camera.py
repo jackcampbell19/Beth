@@ -27,7 +27,7 @@ class Camera:
         self.latest_frame = None
         self.frame_center = np.array([self.frame_size[0] / 2, self.frame_size[1] / 2])
 
-    def generate_camera(self, init_frames=10):
+    def generate_camera(self, init_frames=30):
         """
         Generates and returns a new camera instance.
         :param init_frames:
