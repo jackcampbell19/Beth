@@ -46,7 +46,8 @@ key_positions = [
         visible_squares=[
             Square(identifier=vs['id'], corners=vs['corners'])
             for vs in kp['visible-squares']
-        ]
+        ],
+        sid_fid_mapping=kp['square-calibration-fid-mapping']
     )
     for kp in config['key-positions']
 ]
@@ -197,8 +198,19 @@ def exe_capture_key_position_images():
     for key_position in key_positions:
         x, y = key_position.gantry_position
         gantry.set_position(x, y)
-        frm = camera.capture_frame()
-        save_frame_to_runtime_dir(frm, calibration=True, name=f"key-position-{x}x{y}")
+        frame = camera.capture_frame()
+        markers = Marker.extract_markers(frame)
+        sid_center_positions = {}
+        for sid in key_position.sid_fid_mapping:
+            fid = key_position.sid_fid_mapping[sid]
+            found_markers = list(filter(lambda m: m.id == fid, markers))
+            if len(found_markers) != 1:
+                log.error(f"Found {len(found_markers)} markers with fid '{fid}'.")
+                continue
+            marker = found_markers[0]
+            sid_center_positions[sid] = list([int(v) for v in marker.center])
+        save_frame_to_runtime_dir(frame, calibration=True, name=f"key-position-{x}x{y}")
+        log.info(f"Visible squares for key position at {key_position.gantry_position}:\n{json.dumps(sid_center_positions)}")
     gantry.set_position(0, 0)
 
 

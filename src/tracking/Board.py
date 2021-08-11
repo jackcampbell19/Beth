@@ -107,6 +107,7 @@ class Square:
 
 class KeyPosition:
 
-    def __init__(self, position, visible_squares):
+    def __init__(self, position, visible_squares, sid_fid_mapping):
         self.gantry_position = position
         self.visible_squares = visible_squares
+        self.sid_fid_mapping = sid_fid_mapping
