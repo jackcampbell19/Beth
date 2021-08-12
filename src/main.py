@@ -43,10 +43,7 @@ fcc_map = config['fid-correction-coefficients']
 key_positions = [
     KeyPosition(
         position=kp['gantry-position'],
-        visible_squares=[
-            Square(identifier=vs['id'], corners=vs['corners'])
-            for vs in kp['visible-squares']
-        ],
+        sid_centers=kp['sid-centers'],
         sid_fid_mapping=kp['square-calibration-fid-mapping']
     )
     for kp in config['key-positions']
@@ -144,11 +141,10 @@ def analyze_board():
         markers, frame = take_snapshot()
         for marker in markers:
             piece_id = board.translate_fid_to_piece(marker.id)
-            for square in key_position.visible_squares:
-                if point_lies_in_square(marker.center, square.corners):
-                    if square.id in square_contents and square_contents[square.id] != piece_id:
-                        raise BoardPieceViolation(f"Two pieces found in the same square: {square.id}")
-                    square_contents[square.id] = piece_id
+            sid = key_position.get_closest_sid(marker.center)
+            if sid in square_contents and square_contents[sid] != piece_id:
+                raise BoardPieceViolation(f"Two pieces found in the same square: {sid}")
+            square_contents[sid] = piece_id
         log.info(f"Found pieces: {square_contents}")
     return square_contents
 

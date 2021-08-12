@@ -1,5 +1,6 @@
 from src.misc.Exceptions import BoardPieceViolation
 import numpy as np
+import math
 
 from src.misc.Log import log
 
@@ -98,16 +99,24 @@ class Board:
         return move
 
 
-class Square:
-
-    def __init__(self, identifier, corners):
-        self.id = identifier
-        self.corners = corners
-
-
 class KeyPosition:
 
-    def __init__(self, position, visible_squares, sid_fid_mapping):
+    def __init__(self, position, sid_centers, sid_fid_mapping):
         self.gantry_position = position
-        self.visible_squares = visible_squares
+        self.sid_centers = sid_centers
         self.sid_fid_mapping = sid_fid_mapping
+
+    def get_closest_sid(self, pos):
+        """
+        Returns the SID of the square that is closest to the position.
+        """
+        x, y = pos
+        closest_sid = self.sid_centers.keys()[0]
+        closest_distance = math.inf
+        for sid in self.sid_centers:
+            sid_x, sid_y = self.sid_centers[sid]
+            distance = np.linalg.norm(np.array([sid_x, sid_y]) - np.array([x, y]))
+            if closest_distance > distance:
+                closest_distance = distance
+                closest_sid = sid
+        return closest_sid
