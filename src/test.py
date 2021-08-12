@@ -30,7 +30,7 @@ engine = pyttsx3.init()
 volume = engine.getProperty('volume')
 print(volume)
 engine.setProperty('volume', 1.0)
-voices = list(filter(lambda x: x.languages[0].startswith('en') and x.name in ['Samantha'], engine.getProperty('voices')))
+voices = list(filter(lambda x: x.languages[0].startswith('en'), engine.getProperty('voices')))
 print(voices)
 for voice in voices:
     print(voice.languages, voice.name, voice.age, voice.gender)
