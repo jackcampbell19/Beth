@@ -12,6 +12,7 @@ class AUDIO_IDS:
     ENABLE_CALIBRATION = 'enable-calibration'
     CHECKMATE = 'checkmate'
     WINNING = 'winning'
+    HAHA = 'haha'
     PAWN_PROMOTION = 'pawn-promotion'
     PLEASE_PLACE_MY = 'please-place-my'
     ON = 'on'
@@ -39,7 +40,8 @@ AudioMessages = {
     AUDIO_IDS.CALIBRATION_COMPLETE: 'I have finished calibrating myself. I am ready to play.',
     AUDIO_IDS.X_STOP_PRESSED: 'X stop pressed, now press the left Y stop.',
     AUDIO_IDS.RIGHT_Y_STOP_PRESSED: 'Right Y stop pressed, now starting calibration. This might be a little noisy.',
-    AUDIO_IDS.LEFT_Y_STOP_PRESSED: 'Left Y stop pressed, now press the other Y stop.'
+    AUDIO_IDS.LEFT_Y_STOP_PRESSED: 'Left Y stop pressed, now press the other Y stop.',
+    AUDIO_IDS.HAHA: 'ha. ha. ha'
 }
 
 for letter in 'abcdefgh':
