@@ -15,28 +15,31 @@ from src.tracking.Board import Board
 # est_move =
 
 
-# stockfish = Stockfish()
+stockfish = Stockfish()
 
 
 # stockfish.set_fen_position('rnbqkbnr/ppppp1pp/8/5p2/4P3/8/PPPP1PP1/RNBQKBNR b - - 0 1')
 # stockfish.set_fen_position('rnbqkb1r/ppppp1pp/8/2n5/4K3/8/8/R7 b - - 0 1')
-# stockfish.set_fen_position('6q1/1P1p2p1/K5p1/8/1Pp2B1P/1b1P4/3nP3/k1b5 w - - 0 1')
-# print(stockfish.get_board_visual())
-# move = stockfish.get_best_move_time(200)
-# print(move)
+stockfish.set_fen_position('6q1/1P1p2p1/K5p1/8/1Pp2B1P/1b1P4/3nP3/k1b5 w - - 0 1')
+print(stockfish.get_board_visual())
+move = stockfish.get_best_move_time(200)
+print(move)
 
 import pyttsx3
 engine = pyttsx3.init()
 volume = engine.getProperty('volume')
 print(volume)
 engine.setProperty('volume', 1.0)
-voices = list(filter(lambda x: x.languages[0].startswith('en'), engine.getProperty('voices')))
+voices = list(filter(lambda x: x.languages[0].startswith('en') and x.name in ['Samantha'], engine.getProperty('voices')))
 print(voices)
 for voice in voices:
-    print(voice.languages, voice.name, voice.age, voice.gender)
-    # engine.setProperty('voice', voice.id)
-    # engine.say("Please place my queen on E 4")
-    # engine.runAndWait()
+    print(voice.languages, voice.name, voice.age, voice.gender, voice.id)
+    engine.setProperty('voice', voice.id)
+    print(engine.getProperty('rate'))
+    engine.setProperty('rate', 180)
+    engine.say("Please place my queen on E 4, I can't reach that far.")
+    # engine.save_to_file('hello this is a test', 'h111.wav')
+    engine.runAndWait()
 
 
 # moves = []

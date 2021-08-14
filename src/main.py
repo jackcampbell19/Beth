@@ -5,16 +5,16 @@ from sys import argv, path
 src = pathlib.Path(__file__).parent.absolute()
 path.append(str(src.parent.absolute()))
 
-from src.tracking.Board import Board, KeyPosition, Square
+from src.tracking.Board import Board, KeyPosition
 from src.tracking.Marker import Marker
 from src.mechanical.Camera import Camera
 from src.mechanical.Gantry import Gantry
-from src.mechanical.CatFoot import cleanup
 from src.misc.Exceptions import BoardPieceViolation, InvalidMove
 from src.misc.Helpers import *
 from src.calibration.Calibration import calculate_fid_correction_coefficients
 from src.misc.Log import log
 from random import randint
+from src.audio.Audio import play_audio_ids, AUDIO_IDS
 
 
 """
@@ -217,9 +217,11 @@ def exe_determine_current_position():
 
 
 def exe_main():
+    play_audio_ids(AUDIO_IDS.START_MESSAGE, AUDIO_IDS.PAUSE_SECOND, AUDIO_IDS.ENABLE_CALIBRATION)
     # Perform mechanical calibration
     log.info('Performing gantry calibration.')
     _ = gantry.calibrate()
+    play_audio_ids(AUDIO_IDS.CALIBRATION_COMPLETE)
 
 
 if __name__ == "__main__":
@@ -241,6 +243,9 @@ if __name__ == "__main__":
             calculate_fid_correction_coefficients(camera.frame_center)
         elif '--determine-current-position' in argv:
             exe_determine_current_position()
+        elif '--play-audio' in argv:
+            i = argv.index('--play-audio') + 1
+            play_audio_ids(argv[i])
         elif '--capture-frame' in argv:
             camera.mock_frame_path = str(CALIBRATION_DIR.joinpath('all.jpg').absolute())
             frame = camera.capture_frame(correct_distortion='--raw-image' not in argv)
