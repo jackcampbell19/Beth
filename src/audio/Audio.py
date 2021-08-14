@@ -21,11 +21,14 @@ class AUDIO_IDS:
     PAUSE_SECOND = '<&pause-id-1s&>'
     PAUSE_2_SECONDS = '<&pause-id-2s&>'
     CALIBRATION_COMPLETE = 'calibration-complete'
+    X_STOP_PRESSED = 'x-stop-pressed'
+    RIGHT_Y_STOP_PRESSED = 'right-y-stop-pressed'
+    LEFT_Y_STOP_PRESSED = 'left-y-stop-pressed'
 
 
 AudioMessages = {
     AUDIO_IDS.START_MESSAGE: 'Hello, my name is Beth, would you like to play me in chess?',
-    AUDIO_IDS.ENABLE_CALIBRATION: 'Please enable calibration by pressing the x stop, followed by the closest y stop, the other y stop, and finally the player button.',
+    AUDIO_IDS.ENABLE_CALIBRATION: 'Please enable calibration by pressing the x stop.',
     AUDIO_IDS.CHECKMATE: 'Checkmate, I win!',
     AUDIO_IDS.WINNING: 'Looks like i\'m winning!',
     AUDIO_IDS.PAWN_PROMOTION: 'I am going to promote my pon with this move.',
@@ -33,7 +36,10 @@ AudioMessages = {
     AUDIO_IDS.ON: 'on',
     AUDIO_IDS.THEN_PRESS_BUTTON: 'Then press your button.',
     AUDIO_IDS.QUEEN: 'queen',
-    AUDIO_IDS.CALIBRATION_COMPLETE: 'I have finished calibrating myself. I am ready to play.'
+    AUDIO_IDS.CALIBRATION_COMPLETE: 'I have finished calibrating myself. I am ready to play.',
+    AUDIO_IDS.X_STOP_PRESSED: 'X stop pressed, now press the closest Y stop.',
+    AUDIO_IDS.RIGHT_Y_STOP_PRESSED: 'Right-most Y stop pressed, now press the other Y stop.',
+    AUDIO_IDS.LEFT_Y_STOP_PRESSED: 'Left Y stop pressed, now starting calibration.'
 }
 
 for letter in 'abcdefgh':
@@ -74,5 +80,4 @@ def play_audio_ids(*ids):
 
 
 if __name__ == '__main__':
-    # generate_audio_files(AudioMessages)
-    play_audio_ids('a1')
+    generate_audio_files(AudioMessages)
