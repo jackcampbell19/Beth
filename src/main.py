@@ -222,9 +222,9 @@ def exe_main():
     gantry.x_stop.wait_until_pressed()
     play_audio_ids(AUDIO_IDS.X_STOP_PRESSED)
     gantry.y0_stop.wait_until_pressed()
-    play_audio_ids(AUDIO_IDS.RIGHT_Y_STOP_PRESSED)
-    gantry.y1_stop.wait_until_pressed()
     play_audio_ids(AUDIO_IDS.LEFT_Y_STOP_PRESSED)
+    gantry.y1_stop.wait_until_pressed()
+    play_audio_ids(AUDIO_IDS.RIGHT_Y_STOP_PRESSED)
     # Perform mechanical calibration
     log.info('Performing gantry calibration.')
     _ = gantry.calibrate()
