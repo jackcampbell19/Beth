@@ -66,7 +66,6 @@ def play_audio_ids(*ids):
             time.sleep(2)
             continue
         path = str(directory.joinpath(f"{i}.wav").absolute())
-        print('loading path', path)
         pygame.mixer.music.load(path)
         pygame.mixer.music.play()
         while pygame.mixer.music.get_busy():

@@ -245,7 +245,7 @@ if __name__ == "__main__":
             exe_determine_current_position()
         elif '--play-audio' in argv:
             i = argv.index('--play-audio') + 1
-            play_audio_ids(argv[i])
+            play_audio_ids(argv[i].split(' '))
         elif '--capture-frame' in argv:
             camera.mock_frame_path = str(CALIBRATION_DIR.joinpath('all.jpg').absolute())
             frame = camera.capture_frame(correct_distortion='--raw-image' not in argv)
