@@ -1,7 +1,8 @@
 import pyttsx3
 import pathlib
-import playsound
 import time
+import pygame
+
 
 directory = pathlib.Path(__file__).parent.absolute().joinpath('files').absolute()
 
@@ -53,6 +54,7 @@ def generate_audio_files(audio_ids):
 
 
 def play_audio_ids(*ids):
+    pygame.mixer.init()
     for i in ids:
         if i == AUDIO_IDS.PAUSE_HALF_SECOND:
             time.sleep(0.5)
@@ -63,8 +65,15 @@ def play_audio_ids(*ids):
         elif i == AUDIO_IDS.PAUSE_2_SECONDS:
             time.sleep(2)
             continue
-        playsound.playsound(str(directory.joinpath(f"{i}.wav")))
+        path = str(directory.joinpath(f"{i}.wav").absolute())
+        print('loading path', path)
+        pygame.mixer.music.load(path)
+        pygame.mixer.music.play()
+        while pygame.mixer.music.get_busy():
+            continue
+
 
 
 if __name__ == '__main__':
-    generate_audio_files(AudioMessages)
+    # generate_audio_files(AudioMessages)
+    play_audio_ids('a1')
