@@ -37,8 +37,8 @@ AudioMessages = {
     AUDIO_IDS.THEN_PRESS_BUTTON: 'Then press your button.',
     AUDIO_IDS.QUEEN: 'queen',
     AUDIO_IDS.CALIBRATION_COMPLETE: 'I have finished calibrating myself. I am ready to play.',
-    AUDIO_IDS.X_STOP_PRESSED: 'X stop pressed, now press the closest Y stop.',
-    AUDIO_IDS.RIGHT_Y_STOP_PRESSED: 'Right Y stop pressed, now starting calibration.',
+    AUDIO_IDS.X_STOP_PRESSED: 'X stop pressed, now press the left Y stop.',
+    AUDIO_IDS.RIGHT_Y_STOP_PRESSED: 'Right Y stop pressed, now starting calibration. This might be a little noisy.',
     AUDIO_IDS.LEFT_Y_STOP_PRESSED: 'Left Y stop pressed, now press the other Y stop.'
 }
 
