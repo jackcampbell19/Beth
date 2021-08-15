@@ -220,21 +220,25 @@ def exe_main():
     gantry.set_position(100, 100, rel=True, slow=True)
     play_audio_ids(
         AUDIO_IDS.START_MESSAGE,
-        [AUDIO_IDS.BEFORE_1, AUDIO_IDS.BEFORE_2],
         AUDIO_IDS.PAUSE_SECOND,
-        AUDIO_IDS.ENABLE_CALIBRATION
+        AUDIO_IDS.WAKEUP,
+        AUDIO_IDS.CALIBRATION_0
     )
     # Wait for stops to be pressed
     gantry.x_stop.wait_until_pressed()
-    play_audio_ids(AUDIO_IDS.X_STOP_PRESSED)
+    play_audio_ids(AUDIO_IDS.CALIBRATION_1)
     gantry.y0_stop.wait_until_pressed()
-    play_audio_ids([AUDIO_IDS.LEFT_Y_STOP_PRESSED_0, AUDIO_IDS.LEFT_Y_STOP_PRESSED_1])
+    play_audio_ids(AUDIO_IDS.CALIBRATION_2)
     gantry.y1_stop.wait_until_pressed()
-    play_audio_ids([AUDIO_IDS.RIGHT_Y_STOP_PRESSED_0, AUDIO_IDS.RIGHT_Y_STOP_PRESSED_1])
+    play_audio_ids(AUDIO_IDS.CALIBRATION_3)
     # Perform mechanical calibration
     log.info('Performing gantry calibration.')
     _ = gantry.calibrate()
-    play_audio_ids(AUDIO_IDS.CALIBRATION_COMPLETE, AUDIO_IDS.CALIBRATION_COMPLETE_AFTER)
+    play_audio_ids(
+        AUDIO_IDS.CALIBRATION_COMPLETE,
+        AUDIO_IDS.PAUSE_HALF_SECOND,
+        AUDIO_IDS.SASS_0
+    )
 
 
 if __name__ == "__main__":
