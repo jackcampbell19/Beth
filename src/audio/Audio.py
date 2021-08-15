@@ -28,7 +28,8 @@ class AUDIO_IDS:
     X_STOP_PRESSED = 'x-stop-pressed'
     RIGHT_Y_STOP_PRESSED_0 = 'right-y-stop-pressed-0'
     RIGHT_Y_STOP_PRESSED_1 = 'right-y-stop-pressed-1'
-    LEFT_Y_STOP_PRESSED = 'left-y-stop-pressed'
+    LEFT_Y_STOP_PRESSED_0 = 'left-y-stop-pressed-0'
+    LEFT_Y_STOP_PRESSED_1 = 'left-y-stop-pressed-1'
     CALIBRATION_COMPLETE_AFTER = 'calibration-complete-after'
 
 
@@ -45,11 +46,12 @@ AudioMessages = {
     AUDIO_IDS.THEN_PRESS_BUTTON: 'Then press your button.',
     AUDIO_IDS.QUEEN: 'queen',
     AUDIO_IDS.CALIBRATION_COMPLETE: 'I have finished calibrating myself. I am ready to play.',
-    AUDIO_IDS.CALIBRATION_COMPLETE_AFTER: 'And by that I mean I am ready to beat you.',
+    AUDIO_IDS.CALIBRATION_COMPLETE_AFTER: 'And by that, I mean I am ready to beat you.',
     AUDIO_IDS.X_STOP_PRESSED: 'Good, now press the left Y stop.',
     AUDIO_IDS.RIGHT_Y_STOP_PRESSED_0: 'Perfect, now starting calibration. This might be a little noisy.',
     AUDIO_IDS.RIGHT_Y_STOP_PRESSED_1: 'Finally, took you long enough. Now I can start calibration. This might be a little noisy.',
-    AUDIO_IDS.LEFT_Y_STOP_PRESSED: 'Left Y stop pressed. Be more gentle next time buddy. Now press the other Y stop.',
+    AUDIO_IDS.LEFT_Y_STOP_PRESSED_0: 'Ouch! Be more gentle next time buddy. Now press the other Y stop.',
+    AUDIO_IDS.LEFT_Y_STOP_PRESSED_1: 'What are you? A snail? Let\'s hurry this up. Now press the other Y stop.',
     AUDIO_IDS.HAHA: 'ha. ha. ha'
 }
 
@@ -63,7 +65,7 @@ def generate_audio_files(audio_ids):
     voices = list(
         filter(lambda x: x.languages[0].startswith('en') and x.name in ['Samantha'], engine.getProperty('voices')))
     engine.setProperty('voice', voices[0].id)
-    engine.setProperty('rate', 180)
+    engine.setProperty('rate', 170)
     for audio_id in audio_ids:
         print(f"Generating audio for id {audio_id} saving to " + str(directory.joinpath(f"{audio_id}.wav").absolute()))
         engine.save_to_file(audio_ids[audio_id], str(directory.joinpath(f"{audio_id}.wav").absolute()))
