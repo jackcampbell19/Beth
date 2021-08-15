@@ -72,7 +72,7 @@ class Gantry:
         Stepper.move(self.y0_stepper, self.y1_stepper, self.x_stepper)
         return x_pos, y_pos
 
-    def set_position(self, x, y, rel=False):
+    def set_position(self, x, y, rel=False, slow=False):
         """
         Sets the absolute position of the gantry to the given position.
         :param rel: Set position relatively instead of absolutely.
@@ -88,7 +88,10 @@ class Gantry:
             self.x_stepper.set_position_abs(int(x))
             self.y0_stepper.set_position_abs(int(y))
             self.y1_stepper.set_position_abs(int(y))
-        Stepper.move(self.x_stepper, self.y0_stepper, self.y1_stepper)
+        if slow:
+            Stepper.move(self.x_stepper, self.y0_stepper, self.y1_stepper, max_delay=0.0012, min_delay=0.0008)
+        else:
+            Stepper.move(self.x_stepper, self.y0_stepper, self.y1_stepper)
 
     def set_z_position(self, p):
         """

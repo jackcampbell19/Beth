@@ -217,6 +217,7 @@ def exe_determine_current_position():
 
 
 def exe_main():
+    gantry.set_position(100, 100, rel=True, slow=True)
     play_audio_ids(
         AUDIO_IDS.START_MESSAGE,
         [AUDIO_IDS.BEFORE_1, AUDIO_IDS.BEFORE_2],
