@@ -220,7 +220,7 @@ def exe_main():
     gantry.set_position(100, 100, rel=True, slow=True)
     play_audio_ids(
         AUDIO_IDS.START_MESSAGE,
-        AUDIO_IDS.PAUSE_SECOND,
+        AUDIO_IDS.PAUSE_HALF_SECOND,
         AUDIO_IDS.WAKEUP,
         AUDIO_IDS.CALIBRATION_0
     )
@@ -237,7 +237,9 @@ def exe_main():
     play_audio_ids(
         AUDIO_IDS.CALIBRATION_COMPLETE,
         AUDIO_IDS.PAUSE_HALF_SECOND,
-        AUDIO_IDS.SASS_0
+        AUDIO_IDS.SASS_0,
+        AUDIO_IDS.PAUSE_HALF_SECOND,
+        AUDIO_IDS.HAHA
     )
 
 

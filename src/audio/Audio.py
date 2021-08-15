@@ -19,6 +19,7 @@ class AUDIO_IDS:
     CALIBRATION_3 = 'calibration-3'
     CALIBRATION_COMPLETE = 'calibration-complete'
     SASS_0 = 'sass-0'
+    HAHA = 'haha'
 
 
 AudioMessages = {
@@ -29,7 +30,8 @@ AudioMessages = {
     AUDIO_IDS.CALIBRATION_2: 'What are you? A snail? Let\'s hurry this up. Now press the button on the opposite side.',
     AUDIO_IDS.CALIBRATION_3: 'Finally, took you long enough. Now I can start my calibration. This might be a little noisy.',
     AUDIO_IDS.CALIBRATION_COMPLETE: 'Okay, I am all calibrated and ready to play.',
-    AUDIO_IDS.SASS_0: 'And by that, I mean that I am ready to beat you. ha. ha. ha'
+    AUDIO_IDS.SASS_0: 'And by that, I mean that I am ready to beat you.',
+    AUDIO_IDS.HAHA: 'ha. ha. ha'
 }
 
 for letter in 'abcdefgh':
