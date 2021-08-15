@@ -42,7 +42,7 @@ def generate_audio_files(audio_ids):
     voices = list(
         filter(lambda x: x.languages[0].startswith('en') and x.name in ['Samantha'], engine.getProperty('voices')))
     engine.setProperty('voice', voices[0].id)
-    engine.setProperty('rate', 175)
+    engine.setProperty('rate', 180)
     for audio_id in audio_ids:
         print(f"Generating audio for id {audio_id} saving to " + str(directory.joinpath(f"{audio_id}.wav").absolute()))
         engine.save_to_file(audio_ids[audio_id], str(directory.joinpath(f"{audio_id}.wav").absolute()))
