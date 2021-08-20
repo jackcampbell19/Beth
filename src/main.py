@@ -344,7 +344,7 @@ if __name__ == "__main__":
             play_audio_ids(*argv[i].split(' '))
         elif '--get-board-state' in argv:
             gantry.calibrate()
-            state = get_board_state()
+            state = get_board_state(save_images=True)
             s = Stockfish()
             s.set_fen_position(Board.board_state_to_fen(state))
             print(s.get_board_visual())
