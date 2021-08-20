@@ -15,6 +15,7 @@ from src.calibration.Calibration import calculate_fid_correction_coefficients
 from src.misc.Log import log
 from random import randint
 from src.audio.Audio import play_audio_ids, AUDIO_IDS
+from stockfish import Stockfish
 
 
 """
@@ -48,6 +49,7 @@ key_positions = [
     )
     for kp in config['key-positions']
 ]
+z_axis_extension = config['z-axis-piece-extension']
 # Init the camera
 camera = Camera(
     camera_index=0,
@@ -91,13 +93,39 @@ Define main functions.
 """
 
 
-def make_move(move):
+def get_extension_amount(piece):
+    piece = piece.lower()
+    if piece in z_axis_extension:
+        return z_axis_extension[piece]
+    else:
+        return 1
+
+
+def make_move(move, board_state):
     if len(move) != 4:
         raise InvalidMove(f"{move}")
     s, e = move[:2], move[2:]
     sx, sy = board.get_square_location(s)
     ex, ey = board.get_square_location(e)
+    if board_state[e] is not None:
+        extension_amount = get_extension_amount(board_state[e])
+        gantry.set_position(ex, ey)
+        gantry.set_z_position(extension_amount)
+        gantry.engage_grip()
+        gantry.set_z_position(0)
+        gantry.set_position(100, 100)
+        gantry.set_z_position(1)
+        gantry.release_grip()
+        gantry.set_z_position(0)
     gantry.set_position(sx, sy)
+    extension_amount = get_extension_amount(board_state[s])
+    gantry.set_z_position(extension_amount)
+    gantry.engage_grip()
+    gantry.set_z_position(0)
+    gantry.set_position(ex, ey)
+    gantry.set_z_position(extension_amount)
+    gantry.release_grip()
+    gantry.set_z_position(0)
 
 
 def adjust_markers(markers):
@@ -126,15 +154,15 @@ def take_snapshot():
     return markers, frame
 
 
-def analyze_board():
+def get_board_state():
     """
     Analyzes the board to find where all the pieces are.
     For each key position, move the gantry to that position, take a
     snapshot and locate the position of each of the visible pieces.
-    :return: [square_id: fid] A map of square ids to piece ids.
+    :return: [square_id: piece.id] A map of square ids to piece ids.
     """
     log.info('Analyzing board.')
-    square_contents = {}
+    board_state = {}
     for key_position in key_positions:
         x, y = key_position.gantry_position
         gantry.set_position(x, y)
@@ -142,15 +170,47 @@ def analyze_board():
         for marker in markers:
             piece_id = board.translate_fid_to_piece(marker.id)
             sid = key_position.get_closest_sid(marker.center)
-            if sid in square_contents and square_contents[sid] != piece_id:
+            if sid in board_state and board_state[sid] != piece_id:
                 raise BoardPieceViolation(f"Two pieces found in the same square: {sid}")
-            square_contents[sid] = piece_id
-        log.info(f"Found pieces: {square_contents}")
-    return square_contents
+            board_state[sid] = piece_id
+        log.info(f"Found pieces: {board_state}")
+    return board_state
+
+
+def verify_initial_state():
+    pass
+
+
+def wait_for_player_turn():
+    # TODO: replace with proper button
+    gantry.x_stop.wait_until_pressed()
+
+
+def play_game():
+    state_history = [Board.fen_to_board_state('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR')]
+    moves = []
+    stockfish = Stockfish()
+    verify_initial_state()
+    while True:
+        wait_for_player_turn()
+        board_state = get_board_state()
+        previous_state = state_history[-1]
+        try:
+            detected_move = Board.get_move_from_board_states(previous_state, board_state)
+        except InvalidMove:
+            log.error('Invalid move detected.')
+            continue
+        state_history.append(board_state)
+        moves.append(detected_move)
+        stockfish.set_position(moves)
+        generated_move = stockfish.get_best_move_time(2)
+        if generated_move is None:
+            break
+        make_move(generated_move, board_state)
 
 
 """
-Execute main function.
+Define exe function.
 """
 
 
@@ -190,6 +250,9 @@ def exe_remote_control():
 
 
 def exe_capture_key_position_images():
+    """
+    Captures the key position and returns positional data from the calibration grid.
+    """
     _ = gantry.calibrate()
     for key_position in key_positions:
         x, y = key_position.gantry_position
@@ -212,6 +275,9 @@ def exe_capture_key_position_images():
 
 
 def exe_determine_current_position():
+    """
+    Logs the current position of the gantry.
+    """
     x, y = gantry.calibrate()
     log.info(f"Gantry was at position {x}, {y}")
 
@@ -239,8 +305,17 @@ def exe_main():
         AUDIO_IDS.PAUSE_HALF_SECOND,
         AUDIO_IDS.SASS_0,
         AUDIO_IDS.PAUSE_HALF_SECOND,
-        AUDIO_IDS.HAHA
+        AUDIO_IDS.HAHA,
+        AUDIO_IDS.PAUSE_HALF_SECOND
     )
+    # Start playing sequence
+    while True:
+        play_game()
+
+
+"""
+Execute main function.
+"""
 
 
 if __name__ == "__main__":
@@ -265,6 +340,11 @@ if __name__ == "__main__":
         elif '--play-audio' in argv:
             i = argv.index('--play-audio') + 1
             play_audio_ids(*argv[i].split(' '))
+        elif '--get-board-state' in argv:
+            state = get_board_state()
+            s = Stockfish()
+            s.set_fen_position(Board.board_state_to_fen(state))
+            print(s.get_board_visual())
         elif '--capture-frame' in argv:
             camera.mock_frame_path = str(CALIBRATION_DIR.joinpath('all.jpg').absolute())
             frame = camera.capture_frame(correct_distortion='--raw-image' not in argv)

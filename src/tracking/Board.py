@@ -37,7 +37,7 @@ class Board:
         return 0, 0
 
     @staticmethod
-    def square_ids_to_fen(square_ids):
+    def board_state_to_fen(square_ids):
         fen = ""
         em_count = 0
         for sid in [f"{c}{r}" for r in range(8, 0, -1) for c in 'abcdefgh']:
@@ -57,7 +57,7 @@ class Board:
         return fen
 
     @staticmethod
-    def fen_to_square_ids(fen):
+    def fen_to_board_state(fen):
         board_layout = fen.split()[0]
         for x in range(1, 9):
             board_layout = board_layout.replace(str(x), ''.join(['0' for _ in range(x)]))
@@ -74,24 +74,45 @@ class Board:
         return square_ids
 
     @staticmethod
-    def get_move_from_fen_positions(prev_fen, next_fen):
-        prev_sids = Board.fen_to_square_ids(prev_fen)
-        next_sids = Board.fen_to_square_ids(next_fen)
-        changed_prev = [sid for sid in prev_sids if sid not in next_sids or next_sids[sid] != prev_sids[sid]]
-        changed_next = [sid for sid in next_sids if sid not in prev_sids or next_sids[sid] != prev_sids[sid]]
+    def get_move_from_fen_positions(prev_fen, curr_fen):
+        return Board.get_move_from_board_states(
+            Board.fen_to_board_state(prev_fen),
+            Board.fen_to_board_state(curr_fen)
+        )
+
+    @staticmethod
+    def get_move_from_board_states(board_state_prev, board_state_current):
+        # Determine the sids in the prev state that differ in the current state
+        changed_prev = [sid for sid in board_state_prev
+                        if sid not in board_state_current or board_state_current[sid] != board_state_prev[sid]]
+        # Determine the sids in the current state that differ from the prev state
+        changed_next = [sid for sid in board_state_current
+                        if sid not in board_state_prev or board_state_current[sid] != board_state_prev[sid]]
+        # If no change return null
         if len(changed_prev) == 0:
             return None
         if len(changed_next) != 1:
-            print(prev_fen)
-            print(next_fen)
-            print(changed_prev)
-            print(changed_next)
-            raise BoardPieceViolation('Invalid move detected.')
+            pieces_moved = set(
+                [board_state_prev[k] for k in changed_prev] + [board_state_current[k] for k in changed_next]
+            )
+            is_castling_move = len(pieces_moved) == 2 and (
+                    ('r' in pieces_moved and 'k' in pieces_moved) or ('R' in pieces_moved and 'K' in pieces_moved)
+            )
+            # If it is a castling move, filter out board state changes that are not related to the king
+            if is_castling_move:
+                board_state_prev = {k: board_state_prev[k] for k in board_state_prev
+                                    if (board_state_prev[k] == 'k' or board_state_prev[k] == 'K')}
+                board_state_current = {k: board_state_current[k] for k in board_state_current
+                                       if (board_state_current[k] == 'k' or board_state_current[k] == 'K')}
+                changed_prev = [sid for sid in board_state_prev
+                                if sid not in board_state_current or board_state_current[sid] != board_state_prev[sid]]
+                changed_next = [sid for sid in board_state_current
+                                if sid not in board_state_prev or board_state_current[sid] != board_state_prev[sid]]
         move_end = changed_next[0]
-        piece_moved = next_sids[move_end]
+        piece_moved = board_state_current[move_end]
         move_start = None
         for sid in changed_prev:
-            if prev_sids[sid] == piece_moved:
+            if board_state_prev[sid] == piece_moved:
                 move_start = sid
         if move_start is None:
             raise BoardPieceViolation('Invalid move detected. Could not find move start.')
