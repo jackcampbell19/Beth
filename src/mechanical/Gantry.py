@@ -29,7 +29,7 @@ class Gantry:
         self.y0_stop = Button(pin=y0_stop_pin)
         self.y1_stop = Button(pin=y1_stop_pin)
 
-    def calibrate(self):
+    def calibrate(self, test_size=False):
         """
         Calibrates the gantry and sets the current position to [0, 0]. Returns
         """
@@ -62,14 +62,15 @@ class Gantry:
         y_pos = int(round((y0_pos + y1_pos) / 2))
         self.y0_stepper.reset()
         self.y1_stepper.reset()
-        self.y0_stepper.set_position_abs(self.y_size)
-        self.y1_stepper.set_position_abs(self.y_size)
-        self.x_stepper.set_position_abs(self.x_size)
-        Stepper.move(self.y0_stepper, self.y1_stepper, self.x_stepper)
-        self.y0_stepper.set_position_abs(0)
-        self.y1_stepper.set_position_abs(0)
-        self.x_stepper.set_position_abs(0)
-        Stepper.move(self.y0_stepper, self.y1_stepper, self.x_stepper)
+        if test_size:
+            self.y0_stepper.set_position_abs(self.y_size)
+            self.y1_stepper.set_position_abs(self.y_size)
+            self.x_stepper.set_position_abs(self.x_size)
+            Stepper.move(self.y0_stepper, self.y1_stepper, self.x_stepper)
+            self.y0_stepper.set_position_abs(0)
+            self.y1_stepper.set_position_abs(0)
+            self.x_stepper.set_position_abs(0)
+            Stepper.move(self.y0_stepper, self.y1_stepper, self.x_stepper)
         return x_pos, y_pos
 
     def set_position(self, x, y, rel=False, slow=False):

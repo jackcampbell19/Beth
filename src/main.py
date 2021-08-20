@@ -347,6 +347,7 @@ if __name__ == "__main__":
             i = argv.index('--play-audio') + 1
             play_audio_ids(*argv[i].split(' '))
         elif '--make-move' in argv:
+            gantry.calibrate()
             i = argv.index('--make-move') + 1
             move = argv[i]
             s, e = move[:2], move[2:]
