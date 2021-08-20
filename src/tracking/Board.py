@@ -132,7 +132,7 @@ class KeyPosition:
         Returns the SID of the square that is closest to the position.
         """
         x, y = pos
-        closest_sid = self.sid_centers.keys()[0]
+        closest_sid = list(self.sid_centers.keys())[0]
         closest_distance = math.inf
         for sid in self.sid_centers:
             sid_x, sid_y = self.sid_centers[sid]
