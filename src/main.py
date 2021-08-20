@@ -93,6 +93,10 @@ Define main functions.
 """
 
 
+def generate_stockfish_instance():
+    return Stockfish('home/pi/stockfish')
+
+
 def get_extension_amount(piece):
     piece = piece.lower()
     if piece in z_axis_extension:
@@ -191,7 +195,7 @@ def wait_for_player_turn():
 def play_game():
     state_history = [Board.fen_to_board_state('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR')]
     moves = []
-    stockfish = Stockfish()
+    stockfish = generate_stockfish_instance()
     verify_initial_state()
     while True:
         wait_for_player_turn()
@@ -345,7 +349,7 @@ if __name__ == "__main__":
         elif '--get-board-state' in argv:
             gantry.calibrate()
             state = get_board_state(save_images=True)
-            s = Stockfish()
+            s = generate_stockfish_instance()
             s.set_fen_position(Board.board_state_to_fen(state))
             print(s.get_board_visual())
         elif '--capture-frame' in argv:
