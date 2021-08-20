@@ -154,7 +154,7 @@ def take_snapshot():
     return markers, frame
 
 
-def get_board_state():
+def get_board_state(save_images=False):
     """
     Analyzes the board to find where all the pieces are.
     For each key position, move the gantry to that position, take a
@@ -167,13 +167,15 @@ def get_board_state():
         x, y = key_position.gantry_position
         gantry.set_position(x, y)
         markers, frame = take_snapshot()
+        if save_images:
+            save_frame_to_runtime_dir(frame)
         for marker in markers:
             piece_id = board.translate_fid_to_piece(marker.id)
             sid = key_position.get_closest_sid(marker.center)
             if sid in board_state and board_state[sid] != piece_id:
                 raise BoardPieceViolation(f"Two pieces found in the same square: {sid}")
             board_state[sid] = piece_id
-        log.info(f"Found pieces: {board_state}")
+    log.info(f"Board state: {board_state}")
     return board_state
 
 
