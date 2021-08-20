@@ -111,7 +111,7 @@ def make_move(move, board_state):
     s, e = move[:2], move[2:]
     sx, sy = board.get_square_location(s)
     ex, ey = board.get_square_location(e)
-    if board_state[e] is not None:
+    if e in board_state:
         extension_amount = get_extension_amount(board_state[e])
         gantry.set_position(ex, ey)
         gantry.set_z_position(extension_amount)
