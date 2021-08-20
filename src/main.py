@@ -94,7 +94,7 @@ Define main functions.
 
 
 def generate_stockfish_instance():
-    return Stockfish('home/pi/stockfish')
+    return Stockfish('/home/pi/stockfish')
 
 
 def get_extension_amount(piece):
