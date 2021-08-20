@@ -346,6 +346,17 @@ if __name__ == "__main__":
         elif '--play-audio' in argv:
             i = argv.index('--play-audio') + 1
             play_audio_ids(*argv[i].split(' '))
+        elif '--make-move' in argv:
+            i = argv.index('--make-move') + 1
+            move = argv[i]
+            s, e = move[:2], move[2:]
+            state_info = list(argv[i + 1])
+            state = {
+                s: state_info[0]
+            }
+            if len(state_info) == 2:
+                state[e] = state_info[1]
+            make_move(move, state)
         elif '--get-board-state' in argv:
             gantry.calibrate()
             state = get_board_state(save_images=True)
