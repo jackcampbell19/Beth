@@ -78,10 +78,10 @@ class Camera:
                  f"{'' if correct_distortion else ' no'} distortion correction.")
         camera = self.generate_camera()
         ret, frame = camera.read()
-        for _ in range(100):
+        for i in range(30):
             if ret:
-                print("ret break")
-                break
+                log.debug(f"Initial camera read failed on iteration {i}")
+                continue
             ret, frame = camera.read()
             print(f"Exposure: {camera.get(cv2.CAP_PROP_AUTO_EXPOSURE)} - {camera.get(cv2.CAP_PROP_EXPOSURE)}")
         if not ret:
