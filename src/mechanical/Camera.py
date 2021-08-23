@@ -79,8 +79,8 @@ class Camera:
         camera = self.generate_camera()
         ret, frame = camera.read()
         for i in range(30):
-            if ret:
-                log.debug(f"Initial camera read failed on iteration {i}")
+            if not ret:
+                log.error(f"Initial camera read failed on iteration {i}")
                 continue
             ret, frame = camera.read()
             print(f"Exposure: {camera.get(cv2.CAP_PROP_AUTO_EXPOSURE)} - {camera.get(cv2.CAP_PROP_EXPOSURE)}")
