@@ -40,6 +40,7 @@ class Camera:
         for _ in range(10):
             _, _ = camera.read()
         exposure = camera.get(cv2.CAP_PROP_EXPOSURE)
+        print(exposure)
         camera.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.25)
         camera.set(cv2.CAP_PROP_EXPOSURE, exposure * 0.75)
         return camera
@@ -81,6 +82,7 @@ class Camera:
         camera = self.generate_camera()
         log.info(f"Capturing frame from camera with"
                  f"{'' if correct_distortion else ' no'} distortion correction.")
+        print('a', camera.get(cv2.CAP_PROP_EXPOSURE))
         ret, frame = camera.read()
         if not ret:
             raise CameraError('Failed to read from from camera.')
