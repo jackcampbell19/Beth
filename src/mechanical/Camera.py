@@ -73,10 +73,10 @@ class Camera:
             return frame
         camera = self.generate_camera()
         camera.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.25)
-        camera.set(cv2.CAP_PROP_EXPOSURE, -10)
+        camera.set(cv2.CAP_PROP_EXPOSURE, 0.001)
         log.info('Warming camera up.')
         ret, frame = camera.read()
-        for i in range(15):
+        for i in range(5):
             if not ret:
                 log.error(f"Initial camera read failed on iteration {i}")
                 continue
