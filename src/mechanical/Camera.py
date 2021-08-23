@@ -36,13 +36,8 @@ class Camera:
         camera.set(cv2.CAP_PROP_FRAME_WIDTH, self.frame_size[0])
         camera.set(cv2.CAP_PROP_FRAME_HEIGHT, self.frame_size[1])
         camera.set(cv2.CAP_PROP_BUFFERSIZE, 3)
-        camera.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.75)
-        for _ in range(10):
+        for _ in range(15):
             _, _ = camera.read()
-        exposure = camera.get(cv2.CAP_PROP_EXPOSURE)
-        print(exposure)
-        camera.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.25)
-        camera.set(cv2.CAP_PROP_EXPOSURE, 0.0002)
         return camera
 
     def correct_distortion(self, frame):
@@ -82,7 +77,6 @@ class Camera:
         camera = self.generate_camera()
         log.info(f"Capturing frame from camera with"
                  f"{'' if correct_distortion else ' no'} distortion correction.")
-        print('a', camera.get(cv2.CAP_PROP_EXPOSURE))
         ret, frame = camera.read()
         if not ret:
             raise CameraError('Failed to read from from camera.')
