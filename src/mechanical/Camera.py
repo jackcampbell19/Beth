@@ -82,6 +82,7 @@ class Camera:
             if ret:
                 break
             ret, frame = camera.read()
+            print(f"Exposure: {camera.get(cv2.CAP_PROP_AUTO_EXPOSURE)} - {camera.get(cv2.CAP_PROP_EXPOSURE)}")
         if not ret:
             raise CameraError('Failed to read from from camera.')
         camera.release()

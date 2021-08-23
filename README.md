@@ -31,5 +31,5 @@
 #### `--determine-current-position`
 * Determines the current position of the gantry by calibrating itself from where it is manually positioned.
 
-#### `--capture-frame --no-distortion? --show-markers?`
+#### `--capture-frame --raw-image? --show-markers?`
 * Captures a frame and saves it to the runtime directory. `--raw-image` and `--show-markers` are optional flags.
