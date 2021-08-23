@@ -38,11 +38,10 @@ class Camera:
         camera.set(cv2.CAP_PROP_BUFFERSIZE, 3)
         camera.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.75)
         for _ in range(10):
-            ret, _ = camera.read()
+            _, _ = camera.read()
         exposure = camera.get(cv2.CAP_PROP_EXPOSURE)
         camera.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.25)
         camera.set(cv2.CAP_PROP_EXPOSURE, exposure * 0.75)
-
         return camera
 
     def correct_distortion(self, frame):
