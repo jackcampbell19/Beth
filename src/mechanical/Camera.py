@@ -76,6 +76,7 @@ class Camera:
             return frame
         camera = self.generate_camera()
         camera.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.25)
+        camera.set(cv2.CAP_PROP_EXPOSURE, -4)
         log.info('Warming camera up.')
         ret, frame = camera.read()
         for i in range(20):
