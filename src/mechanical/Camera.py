@@ -82,7 +82,7 @@ class Camera:
                 log.error(f"Initial camera read failed on iteration {i}")
                 continue
             ret, frame = camera.read()
-            print(f"Exposure: {camera.get(cv2.CAP_PROP_AUTO_EXPOSURE)} - {camera.get(cv2.CAP_PROP_EXPOSURE)} = {camera.get(cv2.CAP_PROP_XI_EXPOSURE)}")
+            print(f"Exposure: {camera.get(cv2.CAP_PROP_AUTO_EXPOSURE)} - {camera.get(cv2.CAP_PROP_EXPOSURE)}")
         log.info(f"Capturing frame from camera with"
                  f"{'' if correct_distortion else ' no'} distortion correction.")
         ret, frame = camera.read()
