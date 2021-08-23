@@ -74,15 +74,17 @@ class Camera:
             frame = cv2.imread(self.mock_frame_path)
             self.latest_frame = frame
             return frame
-        log.info(f"Capturing frame from camera with"
-                 f"{'' if correct_distortion else ' no'} distortion correction.")
         camera = self.generate_camera()
+        log.info('Warming camera up.')
         ret, frame = camera.read()
         for i in range(20):
             if not ret:
                 log.error(f"Initial camera read failed on iteration {i}")
                 continue
             ret, frame = camera.read()
+        log.info(f"Capturing frame from camera with"
+                 f"{'' if correct_distortion else ' no'} distortion correction.")
+        ret, frame = camera.read()
         if not ret:
             raise CameraError('Failed to read from from camera.')
         camera.release()
