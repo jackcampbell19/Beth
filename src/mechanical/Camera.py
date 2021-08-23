@@ -80,6 +80,7 @@ class Camera:
         ret, frame = camera.read()
         for _ in range(100):
             if ret:
+                print("ret break")
                 break
             ret, frame = camera.read()
             print(f"Exposure: {camera.get(cv2.CAP_PROP_AUTO_EXPOSURE)} - {camera.get(cv2.CAP_PROP_EXPOSURE)}")
