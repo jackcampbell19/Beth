@@ -365,7 +365,6 @@ if __name__ == "__main__":
             s.set_fen_position(Board.board_state_to_fen(state))
             print(s.get_board_visual())
         elif '--capture-frame' in argv:
-            camera.mock_frame_path = str(CALIBRATION_DIR.joinpath('all.jpg').absolute())
             frame = camera.capture_frame(correct_distortion='--raw-image' not in argv)
             if '--show-markers' in argv:
                 markers = Marker.extract_markers(frame)
