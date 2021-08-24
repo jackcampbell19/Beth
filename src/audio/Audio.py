@@ -1,6 +1,10 @@
 import pyttsx3
 import pathlib
 import time
+
+from os import environ
+environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
+
 import pygame
 import random
 
