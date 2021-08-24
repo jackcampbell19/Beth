@@ -43,6 +43,8 @@ class Camera:
         print(f"CAP_PROP_AUTO_EXPOSURE: {camera.get(cv2.CAP_PROP_AUTO_EXPOSURE)}")
         print(f"CAP_PROP_EXPOSURE: {camera.get(cv2.CAP_PROP_EXPOSURE)}")
         print(f"CAP_PROP_BRIGHTNESS: {camera.get(cv2.CAP_PROP_BRIGHTNESS)}")
+        camera.set(cv2.CAP_PROP_BRIGHTNESS, 0.25)
+        print(f"CAP_PROP_BRIGHTNESS: {camera.get(cv2.CAP_PROP_BRIGHTNESS)}")
         return camera
 
     def correct_distortion(self, frame):
