@@ -1,23 +1,24 @@
 import cv2
 import numpy as np
-import glob
+import os
 import pathlib
 import time
 import json
 
 from sys import argv, path
-
-from src.misc.Helpers import draw_markers
-
 src = pathlib.Path(__file__).parent.absolute().parent.absolute()
 path.append(str(src.parent.absolute()))
 
+from src.misc.Helpers import draw_markers
 from src.misc.Log import log
 from src.tracking.Marker import Marker
 
 
-CALIBRATION_DIR = pathlib.Path(__file__).parent.parent.parent.joinpath('runtime').joinpath('calibration').absolute()
-
+CALIBRATION_DIR = pathlib.Path(__file__)\
+    .parent.absolute()\
+    .parent.absolute()\
+    .parent.joinpath('runtime')\
+    .joinpath('calibration').absolute()
 
 def calibrate_distortion_correction_k_d(image_dir, checkerboard_dimensions=(6, 9)):
     sub_pix_criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.1)
@@ -28,8 +29,9 @@ def calibrate_distortion_correction_k_d(image_dir, checkerboard_dimensions=(6, 9
     img_shape = None
     obj_points = []  # 3d point in real world space
     img_points = []  # 2d points in image plane.
-    images = glob.glob(image_dir)
-    print(images)
+    images = os.listdir(image_dir)
+    images = list(filter(lambda x: x.startswith('cam-dis'), images))
+    images = list(map(lambda x: str(CALIBRATION_DIR.joinpath(x).absolute()), images))
     prop_sh = None
     for f_name in images:
         img = cv2.imread(f_name)
@@ -113,4 +115,4 @@ def calculate_fid_correction_coefficients(frame_center):
 
 if __name__ == '__main__':
     if '--camera-distortion' in argv:
-        calibrate_distortion_correction_k_d(input('image directory: '))
+        calibrate_distortion_correction_k_d(str(CALIBRATION_DIR.absolute()))

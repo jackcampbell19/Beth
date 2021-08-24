@@ -8,7 +8,6 @@ import pathlib
 
 CURRENT_DIR = pathlib.Path(__file__).parent.absolute()
 RUNTIME_DIR_PATH = CURRENT_DIR.parent.parent.joinpath('runtime').absolute()
-print(CURRENT_DIR, RUNTIME_DIR_PATH)
 CALIBRATION_DIR = RUNTIME_DIR_PATH.joinpath('calibration').absolute()
 IMAGES_DIR = RUNTIME_DIR_PATH.joinpath('images').absolute()
 LOG_DIR = RUNTIME_DIR_PATH.joinpath('logs').absolute()

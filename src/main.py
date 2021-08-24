@@ -377,7 +377,7 @@ if __name__ == "__main__":
                 gantry.set_z_position(30)
                 gantry.set_z_position(0)
                 frame = camera.capture_frame(correct_distortion=False)
-                save_frame_to_runtime_dir(frame, calibration=True, name=f"cam-dis-{i}.jpg")
+                save_frame_to_runtime_dir(frame, calibration=True, name=f"cam-dis-{i}")
         else:
             exe_main()
     except KeyboardInterrupt:
