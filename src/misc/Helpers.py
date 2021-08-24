@@ -22,7 +22,7 @@ def ensure_runtime_dir_exists(func):
         for path in [RUNTIME_DIR_PATH, CALIBRATION_DIR, IMAGES_DIR, LOG_DIR]:
             if not os.path.exists(path):
                 os.mkdir(path)
-        image_retain_milliseconds = 1000
+        image_retain_milliseconds = 1000 * 30
         for filename in os.listdir(IMAGES_DIR):
             timestamp = filename.split('.')[0]
             if timestamp.isnumeric():
