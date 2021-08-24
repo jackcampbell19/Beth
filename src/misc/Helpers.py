@@ -27,6 +27,7 @@ def ensure_runtime_dir_exists(func):
             timestamp = filename.split('.')[0]
             if timestamp.isnumeric():
                 timestamp = int(timestamp)
+                print(Log.current_time_in_milliseconds(), timestamp, Log.current_time_in_milliseconds() - timestamp)
                 if Log.current_time_in_milliseconds() - timestamp < image_retain_milliseconds:
                     continue
             image_path = str(IMAGES_DIR.joinpath(filename).absolute())
