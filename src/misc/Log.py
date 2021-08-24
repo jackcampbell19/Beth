@@ -19,6 +19,10 @@ class Log:
         """
         return int((time.time() - self.INIT_TIME) * 1000)
 
+    @staticmethod
+    def current_time_in_milliseconds():
+        return int(time.time() * 1000)
+
     def info(self, message):
         if not self.LOG_INFO:
             return

@@ -81,7 +81,9 @@ class Camera:
         if not ret:
             raise CameraError('Failed to read from from camera.')
         camera.release()
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        contrast = 1.5
+        frame = cv2.convertScaleAbs(frame, alpha=contrast, beta=0)
         if correct_distortion:
             frame = self.correct_distortion(frame)
         self.latest_frame = frame

@@ -221,7 +221,7 @@ Define exe function.
 
 
 def exe_capture_calibration_image(name):
-    save_frame_to_runtime_dir(camera.capture_frame(), name=name, calibration=True)
+    save_frame_to_runtime_dir(camera.capture_frame(), calibration=True, name=name)
 
 
 def exe_remote_control():
@@ -275,7 +275,7 @@ def exe_capture_key_position_images():
             marker = found_markers[0]
             sid_center_positions[sid] = list([int(v) for v in marker.center])
             draw_markers(frame, [marker])
-        save_frame_to_runtime_dir(frame, calibration=True, name=f"key-position-{x}x{y}")
+        exe_capture_calibration_image(f"key-position-{x}x{y}")
         log.info(f"Visible squares for key position at {key_position.gantry_position}:\n{json.dumps(sid_center_positions)}")
     gantry.set_position(0, 0)
 
@@ -371,9 +371,7 @@ if __name__ == "__main__":
                 draw_markers(frame, markers, point_only=True, primary_color=(255, 0, 0), secondary_color=(255, 0, 0))
                 adjust_markers(markers)
                 draw_markers(frame, markers, point_only=True, primary_color=(0, 255, 0), secondary_color=(0, 255, 0))
-            save_frame_to_runtime_dir(
-                frame, name=f"cf-{randint(0, 1000)}-{log.elapsed_time_raw()}"
-            )
+            save_frame_to_runtime_dir(frame)
         else:
             exe_main()
     except KeyboardInterrupt:
