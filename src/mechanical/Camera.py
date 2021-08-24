@@ -39,6 +39,13 @@ class Camera:
         camera.set(cv2.CAP_PROP_BUFFERSIZE, 3)
         for _ in range(15):
             _, _ = camera.read()
+        print(f"CAP_PROP_CONTRAST: {camera.get(cv2.CAP_PROP_CONTRAST)}")
+        print(f"CAP_PROP_AUTO_EXPOSURE: {camera.get(cv2.CAP_PROP_AUTO_EXPOSURE)}")
+        print(f"CAP_PROP_EXPOSURE: {camera.get(cv2.CAP_PROP_EXPOSURE)}")
+        print(f"CAP_PROP_FOCUS: {camera.get(cv2.CAP_PROP_FOCUS)}")
+        print(f"CAP_PROP_IRIS: {camera.get(cv2.CAP_PROP_IRIS)}")
+        print(f"CAP_PROP_APERTURE: {camera.get(cv2.CAP_PROP_APERTURE)}")
+        print(f"CAP_PROP_APERTURE: {camera.get(cv2.CAP_PROP_BRIGHTNESS)}")
         return camera
 
     def correct_distortion(self, frame):
@@ -85,7 +92,11 @@ class Camera:
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         if correct_distortion:
             frame = self.correct_distortion(frame)
-        # contrast = 1.5
-        # frame = cv2.convertScaleAbs(frame, alpha=contrast, beta=0)
         self.latest_frame = frame
         return frame
+
+    @staticmethod
+    def adjust_frame_contrast_and_brightness(frame, contrast=1, brightness=0):
+        if not 1 <= contrast <= 3:
+            log.error(f"Contrast must be between 1 and 3. Provided {contrast}")
+        return cv2.convertScaleAbs(frame, alpha=contrast, beta=0)
