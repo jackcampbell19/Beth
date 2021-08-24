@@ -38,7 +38,7 @@ class Camera:
         camera.set(cv2.CAP_PROP_FRAME_HEIGHT, self.frame_size[1])
         camera.set(cv2.CAP_PROP_BUFFERSIZE, 3)
         e = camera.get(cv2.CAP_PROP_EXPOSURE)
-        camera.set(cv2.CAP_PROP_EXPOSURE, 0.1)
+        camera.set(cv2.CAP_PROP_EXPOSURE, 0.00001)
         print(f"CAP_PROP_EXPOSURE: {e} -> {camera.get(cv2.CAP_PROP_EXPOSURE)}")
         for _ in range(60):
             _, _ = camera.read()
