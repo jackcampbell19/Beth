@@ -42,10 +42,7 @@ class Camera:
         print(f"CAP_PROP_CONTRAST: {camera.get(cv2.CAP_PROP_CONTRAST)}")
         print(f"CAP_PROP_AUTO_EXPOSURE: {camera.get(cv2.CAP_PROP_AUTO_EXPOSURE)}")
         print(f"CAP_PROP_EXPOSURE: {camera.get(cv2.CAP_PROP_EXPOSURE)}")
-        print(f"CAP_PROP_FOCUS: {camera.get(cv2.CAP_PROP_FOCUS)}")
-        print(f"CAP_PROP_IRIS: {camera.get(cv2.CAP_PROP_IRIS)}")
-        print(f"CAP_PROP_APERTURE: {camera.get(cv2.CAP_PROP_APERTURE)}")
-        print(f"CAP_PROP_APERTURE: {camera.get(cv2.CAP_PROP_BRIGHTNESS)}")
+        print(f"CAP_PROP_BRIGHTNESS: {camera.get(cv2.CAP_PROP_BRIGHTNESS)}")
         return camera
 
     def correct_distortion(self, frame):
