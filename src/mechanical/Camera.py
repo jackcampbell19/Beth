@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 from src.misc.Exceptions import *
+from src.misc.Helpers import save_frame_to_runtime_dir
 
 from src.misc.Log import log
 
@@ -82,6 +83,7 @@ class Camera:
             raise CameraError('Failed to read from from camera.')
         camera.release()
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        save_frame_to_runtime_dir(frame)
         contrast = 1.5
         frame = cv2.convertScaleAbs(frame, alpha=contrast, beta=0)
         if correct_distortion:
