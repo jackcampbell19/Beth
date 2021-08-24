@@ -372,6 +372,12 @@ if __name__ == "__main__":
                 adjust_markers(markers)
                 draw_markers(frame, markers, point_only=True, primary_color=(0, 255, 0), secondary_color=(0, 255, 0))
             save_frame_to_runtime_dir(frame)
+        elif '--capture-camera-distortion-images' in argv:
+            for i in range(12):
+                gantry.set_z_position(30)
+                gantry.set_z_position(0)
+                frame = camera.capture_frame(correct_distortion=False)
+                save_frame_to_runtime_dir(frame, calibration=True, name=f"cam-dis-{i}.jpg")
         else:
             exe_main()
     except KeyboardInterrupt:

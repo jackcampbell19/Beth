@@ -86,7 +86,7 @@ class Camera:
         if correct_distortion:
             frame = self.correct_distortion(frame)
         save_frame_to_runtime_dir(frame)
-        contrast = 1.5
-        frame = cv2.convertScaleAbs(frame, alpha=contrast, beta=0)
+        # contrast = 1.5
+        # frame = cv2.convertScaleAbs(frame, alpha=contrast, beta=0)
         self.latest_frame = frame
         return frame
