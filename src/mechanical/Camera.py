@@ -39,9 +39,11 @@ class Camera:
         camera.set(cv2.CAP_PROP_BUFFERSIZE, 3)
         e = camera.get(cv2.CAP_PROP_EXPOSURE)
         camera.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.25)
-        camera.set(cv2.CAP_PROP_EXPOSURE, 0.002)
-        print(f"CAP_PROP_EXPOSURE: {e} -> {camera.get(cv2.CAP_PROP_EXPOSURE)}")
-        for _ in range(60):
+        # 0.002 and 0.003 are good for bright light, daytime for example.
+        daytime = 0.002
+        night = 0.005
+        camera.set(cv2.CAP_PROP_EXPOSURE, night)
+        for _ in range(25):
             _, _ = camera.read()
         return camera
 
