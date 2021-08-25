@@ -40,7 +40,7 @@ class Camera:
         e = camera.get(cv2.CAP_PROP_EXPOSURE)
         camera.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.25)
         # 0.002 and 0.003 are good for bright light, daytime for example.
-        daytime = 0.01
+        daytime = 0.002
         camera.set(cv2.CAP_PROP_EXPOSURE, daytime)
         for _ in range(25):
             _, _ = camera.read()
