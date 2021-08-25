@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 from src.misc.Exceptions import *
+from src.misc.Helpers import save_frame_to_runtime_dir
 
 from src.misc.Log import log
 
@@ -27,18 +28,22 @@ class Camera:
         self.latest_frame = None
         self.frame_center = np.array([self.frame_size[0] / 2, self.frame_size[1] / 2])
 
-    def generate_camera(self, init_frames=30):
+    def generate_camera(self):
         """
         Generates and returns a new camera instance.
-        :param init_frames:
         :return:
         """
         camera = cv2.VideoCapture(self.index)
         camera.set(cv2.CAP_PROP_FRAME_WIDTH, self.frame_size[0])
         camera.set(cv2.CAP_PROP_FRAME_HEIGHT, self.frame_size[1])
         camera.set(cv2.CAP_PROP_BUFFERSIZE, 3)
-        for _ in range(init_frames):
-            camera.read()
+        e = camera.get(cv2.CAP_PROP_EXPOSURE)
+        camera.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.25)
+        # 0.002 and 0.003 are good for bright light, daytime for example.
+        daytime = 0.003
+        camera.set(cv2.CAP_PROP_EXPOSURE, daytime)
+        for _ in range(25):
+            _, _ = camera.read()
         return camera
 
     def correct_distortion(self, frame):
@@ -74,14 +79,11 @@ class Camera:
             frame = cv2.imread(self.mock_frame_path)
             self.latest_frame = frame
             return frame
+        log.info('Warming camera up.')
+        camera = self.generate_camera()
         log.info(f"Capturing frame from camera with"
                  f"{'' if correct_distortion else ' no'} distortion correction.")
-        camera = self.generate_camera()
         ret, frame = camera.read()
-        for _ in range(100):
-            if ret:
-                break
-            ret, frame = camera.read()
         if not ret:
             raise CameraError('Failed to read from from camera.')
         camera.release()
@@ -90,3 +92,9 @@ class Camera:
             frame = self.correct_distortion(frame)
         self.latest_frame = frame
         return frame
+
+    @staticmethod
+    def adjust_frame_contrast_and_brightness(frame, contrast=1, brightness=0):
+        if not 1 <= contrast <= 3:
+            log.error(f"Contrast must be between 1 and 3. Provided {contrast}")
+        return cv2.convertScaleAbs(frame, alpha=contrast, beta=0)

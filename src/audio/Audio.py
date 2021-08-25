@@ -1,46 +1,41 @@
 import pyttsx3
 import pathlib
 import time
+
+from os import environ
+environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
+
 import pygame
+import random
 
 
 directory = pathlib.Path(__file__).parent.absolute().joinpath('files').absolute()
 
 
 class AUDIO_IDS:
+    PAUSE_HALF_SECOND = '<&p-0.5>'
+    PAUSE_SECOND = '<&p-1>'
     START_MESSAGE = 'start-message'
-    ENABLE_CALIBRATION = 'enable-calibration'
-    CHECKMATE = 'checkmate'
-    WINNING = 'winning'
-    HAHA = 'haha'
-    PAWN_PROMOTION = 'pawn-promotion'
-    PLEASE_PLACE_MY = 'please-place-my'
-    ON = 'on'
-    THEN_PRESS_BUTTON = 'then-press-button'
-    QUEEN = 'queen'
-    PAUSE_HALF_SECOND = '<&pause-id-0.5s&>'
-    PAUSE_SECOND = '<&pause-id-1s&>'
-    PAUSE_2_SECONDS = '<&pause-id-2s&>'
+    WAKEUP = 'wakeup'
+    CALIBRATION_0 = 'calibration-0'
+    CALIBRATION_1 = 'calibration-1'
+    CALIBRATION_2 = 'calibration-2'
+    CALIBRATION_3 = 'calibration-3'
     CALIBRATION_COMPLETE = 'calibration-complete'
-    X_STOP_PRESSED = 'x-stop-pressed'
-    RIGHT_Y_STOP_PRESSED = 'right-y-stop-pressed'
-    LEFT_Y_STOP_PRESSED = 'left-y-stop-pressed'
+    SASS_0 = 'sass-0'
+    HAHA = 'haha'
+
 
 
 AudioMessages = {
-    AUDIO_IDS.START_MESSAGE: 'Hello, my name is Beth, would you like to play me in chess?',
-    AUDIO_IDS.ENABLE_CALIBRATION: 'Please enable calibration by pressing the x stop.',
-    AUDIO_IDS.CHECKMATE: 'Checkmate, I win!',
-    AUDIO_IDS.WINNING: 'Looks like i\'m winning!',
-    AUDIO_IDS.PAWN_PROMOTION: 'I am going to promote my pon with this move.',
-    AUDIO_IDS.PLEASE_PLACE_MY: 'Please place my',
-    AUDIO_IDS.ON: 'on',
-    AUDIO_IDS.THEN_PRESS_BUTTON: 'Then press your button.',
-    AUDIO_IDS.QUEEN: 'queen',
-    AUDIO_IDS.CALIBRATION_COMPLETE: 'I have finished calibrating myself. I am ready to play.',
-    AUDIO_IDS.X_STOP_PRESSED: 'X stop pressed, now press the left Y stop.',
-    AUDIO_IDS.RIGHT_Y_STOP_PRESSED: 'Right Y stop pressed, now starting calibration. This might be a little noisy.',
-    AUDIO_IDS.LEFT_Y_STOP_PRESSED: 'Left Y stop pressed. Be more gentle next time buddy. Now press the other Y stop.',
+    AUDIO_IDS.START_MESSAGE: 'Hello, my name is Beth.',
+    AUDIO_IDS.WAKEUP: 'I just woke up from a nap and am a little disoriented. I going to need you to make sure that I am working properly.',
+    AUDIO_IDS.CALIBRATION_0: 'Please press the button next to the motor on the top of my gantry. You will see it on the left hand side.',
+    AUDIO_IDS.CALIBRATION_1: 'Ouch! Be more gentle next time buddy. Now press the button closes to the motor below the button you just pressed.',
+    AUDIO_IDS.CALIBRATION_2: 'What are you? A snail? Let\'s hurry this up. Now press the button on the opposite side.',
+    AUDIO_IDS.CALIBRATION_3: 'Finally, took you long enough. Now I can start my calibration. This might be a little noisy.',
+    AUDIO_IDS.CALIBRATION_COMPLETE: 'Okay, I am all calibrated and ready to play.',
+    AUDIO_IDS.SASS_0: 'And by that, I mean that I am ready to beat you.',
     AUDIO_IDS.HAHA: 'ha. ha. ha'
 }
 
@@ -62,16 +57,21 @@ def generate_audio_files(audio_ids):
 
 
 def play_audio_ids(*ids):
+    """
+    Plays the audio ids in the order they are listed. If a list of audio ids is
+    supplied as
+    """
     pygame.mixer.init()
     for i in ids:
+        if len(i) == 0:
+            continue
+        if type(i) == list:
+            i = random.choice(i)
         if i == AUDIO_IDS.PAUSE_HALF_SECOND:
             time.sleep(0.5)
             continue
         elif i == AUDIO_IDS.PAUSE_SECOND:
             time.sleep(1)
-            continue
-        elif i == AUDIO_IDS.PAUSE_2_SECONDS:
-            time.sleep(2)
             continue
         path = str(directory.joinpath(f"{i}.wav").absolute())
         pygame.mixer.music.load(path)

@@ -1,4 +1,4 @@
-from src.misc.Log import log
+from src.misc.Log import log, Log
 from PIL import Image
 import numpy as np
 import cv2
@@ -8,7 +8,6 @@ import pathlib
 
 CURRENT_DIR = pathlib.Path(__file__).parent.absolute()
 RUNTIME_DIR_PATH = CURRENT_DIR.parent.parent.joinpath('runtime').absolute()
-print(CURRENT_DIR, RUNTIME_DIR_PATH)
 CALIBRATION_DIR = RUNTIME_DIR_PATH.joinpath('calibration').absolute()
 IMAGES_DIR = RUNTIME_DIR_PATH.joinpath('images').absolute()
 LOG_DIR = RUNTIME_DIR_PATH.joinpath('logs').absolute()
@@ -16,12 +15,32 @@ LOG_DIR = RUNTIME_DIR_PATH.joinpath('logs').absolute()
 
 def ensure_runtime_dir_exists(func):
     """
-    Creates the runtime dir if it does not exist.
+    Creates the runtime dir if it does not exist. Erases old images and logs.
     """
     def wrapper(*args, **kwargs):
         for path in [RUNTIME_DIR_PATH, CALIBRATION_DIR, IMAGES_DIR, LOG_DIR]:
             if not os.path.exists(path):
                 os.mkdir(path)
+        image_retain_milliseconds = 1000 * 30
+        for filename in os.listdir(IMAGES_DIR):
+            timestamp = filename.split('.')[0]
+            if timestamp.isnumeric():
+                timestamp = int(timestamp)
+                if Log.current_time_in_milliseconds() - timestamp < image_retain_milliseconds:
+                    continue
+            image_path = str(IMAGES_DIR.joinpath(filename).absolute())
+            os.remove(image_path)
+            log.info(f"Removed image {filename} from runtime directory.")
+        log_retain_milliseconds = 60 * 60 * 12 * 1000
+        for filename in os.listdir(LOG_DIR):
+            timestamp = filename.split('.')[0]
+            if timestamp.isnumeric():
+                timestamp = int(timestamp)
+                if Log.current_time_in_milliseconds() - timestamp < log_retain_milliseconds:
+                    continue
+            log_path = str(LOG_DIR.joinpath(filename).absolute())
+            os.remove(log_path)
+            log.info(f"Removed image {filename} from runtime directory.")
         func(*args, **kwargs)
     return wrapper
 
@@ -35,31 +54,10 @@ def save_frame_to_runtime_dir(frame, calibration=False, name=None):
     :param frame: THe frame to save
     """
     data = Image.fromarray(frame)
-    path = \
-        f"{CALIBRATION_DIR if calibration else IMAGES_DIR}/{name if name is not None else log.elapsed_time_raw()}.jpg"
+    path = f"{CALIBRATION_DIR if calibration else IMAGES_DIR}" \
+           f"/{name if name is not None else Log.current_time_in_milliseconds()}.jpg"
     log.info(f"Saving frame to {path}")
     data.save(path)
-
-
-def stitch_frames_together(frames):
-    """
-    Stitches frames together and returns the new frame.
-    :param frames: {2d np.array} Multidimensional array of frames.
-    :return: {np.array} Stitched frame.
-    """
-    yn, xn, ys, xs, _ = frames.shape
-    stitched_frame = np.array(
-        [
-            [[0, 0, 0] for _ in range(xn * xs)] for _ in range(yn * ys)
-        ]
-    )
-    for x0 in range(xn):
-        for y0 in range(yn):
-            for x in range(xs):
-                for y in range(ys):
-                    for i in range(3):
-                        stitched_frame[y0 * ys + y, x0 * xs + x][i] = frames[y0, x0][y, x][i]
-    return stitched_frame
 
 
 def draw_markers(frame, markers, point_only=False, primary_color=(100, 255, 0), secondary_color=(150, 150, 255)):

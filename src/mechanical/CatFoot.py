@@ -6,6 +6,7 @@ if "--mock-gpio" in sys.argv:
     from src.misc.MockGPIO import MockGPIO as gpio
 else:
     import RPi.GPIO as gpio
+    gpio.setwarnings(False)
 
 import time
 import math

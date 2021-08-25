@@ -15,6 +15,7 @@ from src.calibration.Calibration import calculate_fid_correction_coefficients
 from src.misc.Log import log
 from random import randint
 from src.audio.Audio import play_audio_ids, AUDIO_IDS
+from stockfish import Stockfish
 
 
 """
@@ -48,6 +49,7 @@ key_positions = [
     )
     for kp in config['key-positions']
 ]
+z_axis_extension = config['z-axis-piece-extension']
 # Init the camera
 camera = Camera(
     camera_index=0,
@@ -91,13 +93,43 @@ Define main functions.
 """
 
 
-def make_move(move):
+def generate_stockfish_instance():
+    return Stockfish('/home/pi/stockfish')
+
+
+def get_extension_amount(piece):
+    piece = piece.lower()
+    if piece in z_axis_extension:
+        return z_axis_extension[piece]
+    else:
+        return 1
+
+
+def make_move(move, board_state):
     if len(move) != 4:
         raise InvalidMove(f"{move}")
     s, e = move[:2], move[2:]
     sx, sy = board.get_square_location(s)
     ex, ey = board.get_square_location(e)
+    if e in board_state:
+        extension_amount = get_extension_amount(board_state[e])
+        gantry.set_position(ex, ey)
+        gantry.set_z_position(extension_amount)
+        gantry.engage_grip()
+        gantry.set_z_position(0)
+        gantry.set_position(100, 100)
+        gantry.set_z_position(1)
+        gantry.release_grip()
+        gantry.set_z_position(0)
     gantry.set_position(sx, sy)
+    extension_amount = get_extension_amount(board_state[s])
+    gantry.set_z_position(extension_amount)
+    gantry.engage_grip()
+    gantry.set_z_position(0)
+    gantry.set_position(ex, ey)
+    gantry.set_z_position(extension_amount)
+    gantry.release_grip()
+    gantry.set_z_position(0)
 
 
 def adjust_markers(markers):
@@ -126,36 +158,70 @@ def take_snapshot():
     return markers, frame
 
 
-def analyze_board():
+def get_board_state(save_images=False):
     """
     Analyzes the board to find where all the pieces are.
     For each key position, move the gantry to that position, take a
     snapshot and locate the position of each of the visible pieces.
-    :return: [square_id: fid] A map of square ids to piece ids.
+    :return: [square_id: piece.id] A map of square ids to piece ids.
     """
     log.info('Analyzing board.')
-    square_contents = {}
+    board_state = {}
     for key_position in key_positions:
         x, y = key_position.gantry_position
         gantry.set_position(x, y)
         markers, frame = take_snapshot()
+        if save_images:
+            save_frame_to_runtime_dir(frame)
         for marker in markers:
             piece_id = board.translate_fid_to_piece(marker.id)
             sid = key_position.get_closest_sid(marker.center)
-            if sid in square_contents and square_contents[sid] != piece_id:
+            if sid in board_state and board_state[sid] != piece_id:
                 raise BoardPieceViolation(f"Two pieces found in the same square: {sid}")
-            square_contents[sid] = piece_id
-        log.info(f"Found pieces: {square_contents}")
-    return square_contents
+            board_state[sid] = piece_id
+    log.info(f"Board state: {board_state}")
+    return board_state
+
+
+def verify_initial_state():
+    pass
+
+
+def wait_for_player_turn():
+    # TODO: replace with proper button
+    gantry.x_stop.wait_until_pressed()
+
+
+def play_game():
+    state_history = [Board.fen_to_board_state('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR')]
+    moves = []
+    stockfish = generate_stockfish_instance()
+    verify_initial_state()
+    while True:
+        wait_for_player_turn()
+        board_state = get_board_state()
+        previous_state = state_history[-1]
+        try:
+            detected_move = Board.get_move_from_board_states(previous_state, board_state)
+        except InvalidMove:
+            log.error('Invalid move detected.')
+            continue
+        state_history.append(board_state)
+        moves.append(detected_move)
+        stockfish.set_position(moves)
+        generated_move = stockfish.get_best_move_time(2)
+        if generated_move is None:
+            break
+        make_move(generated_move, board_state)
 
 
 """
-Execute main function.
+Define exe function.
 """
 
 
 def exe_capture_calibration_image(name):
-    save_frame_to_runtime_dir(camera.capture_frame(), name=name, calibration=True)
+    save_frame_to_runtime_dir(camera.capture_frame(), calibration=True, name=name)
 
 
 def exe_remote_control():
@@ -190,6 +256,9 @@ def exe_remote_control():
 
 
 def exe_capture_key_position_images():
+    """
+    Captures the key position and returns positional data from the calibration grid.
+    """
     _ = gantry.calibrate()
     for key_position in key_positions:
         x, y = key_position.gantry_position
@@ -206,29 +275,53 @@ def exe_capture_key_position_images():
             marker = found_markers[0]
             sid_center_positions[sid] = list([int(v) for v in marker.center])
             draw_markers(frame, [marker])
-        save_frame_to_runtime_dir(frame, calibration=True, name=f"key-position-{x}x{y}")
+        exe_capture_calibration_image(f"key-position-{x}x{y}")
         log.info(f"Visible squares for key position at {key_position.gantry_position}:\n{json.dumps(sid_center_positions)}")
     gantry.set_position(0, 0)
 
 
 def exe_determine_current_position():
+    """
+    Logs the current position of the gantry.
+    """
     x, y = gantry.calibrate()
     log.info(f"Gantry was at position {x}, {y}")
 
 
 def exe_main():
-    play_audio_ids(AUDIO_IDS.START_MESSAGE, AUDIO_IDS.PAUSE_SECOND, AUDIO_IDS.ENABLE_CALIBRATION)
+    gantry.set_position(100, 100, rel=True, slow=True)
+    play_audio_ids(
+        AUDIO_IDS.START_MESSAGE,
+        AUDIO_IDS.PAUSE_HALF_SECOND,
+        AUDIO_IDS.WAKEUP,
+        AUDIO_IDS.CALIBRATION_0
+    )
     # Wait for stops to be pressed
     gantry.x_stop.wait_until_pressed()
-    play_audio_ids(AUDIO_IDS.X_STOP_PRESSED)
+    play_audio_ids(AUDIO_IDS.CALIBRATION_1)
     gantry.y0_stop.wait_until_pressed()
-    play_audio_ids(AUDIO_IDS.LEFT_Y_STOP_PRESSED)
+    play_audio_ids(AUDIO_IDS.CALIBRATION_2)
     gantry.y1_stop.wait_until_pressed()
-    play_audio_ids(AUDIO_IDS.RIGHT_Y_STOP_PRESSED)
+    play_audio_ids(AUDIO_IDS.CALIBRATION_3)
     # Perform mechanical calibration
     log.info('Performing gantry calibration.')
     _ = gantry.calibrate()
-    play_audio_ids(AUDIO_IDS.CALIBRATION_COMPLETE)
+    play_audio_ids(
+        AUDIO_IDS.CALIBRATION_COMPLETE,
+        AUDIO_IDS.PAUSE_HALF_SECOND,
+        AUDIO_IDS.SASS_0,
+        AUDIO_IDS.PAUSE_HALF_SECOND,
+        AUDIO_IDS.HAHA,
+        AUDIO_IDS.PAUSE_HALF_SECOND
+    )
+    # Start playing sequence
+    while True:
+        play_game()
+
+
+"""
+Execute main function.
+"""
 
 
 if __name__ == "__main__":
@@ -253,17 +346,38 @@ if __name__ == "__main__":
         elif '--play-audio' in argv:
             i = argv.index('--play-audio') + 1
             play_audio_ids(*argv[i].split(' '))
+        elif '--make-move' in argv:
+            gantry.calibrate()
+            i = argv.index('--make-move') + 1
+            move = argv[i]
+            s, e = move[:2], move[2:]
+            state_info = list(argv[i + 1])
+            state = {
+                s: state_info[0]
+            }
+            if len(state_info) == 2:
+                state[e] = state_info[1]
+            make_move(move, state)
+        elif '--get-board-state' in argv:
+            gantry.calibrate()
+            state = get_board_state(save_images=True)
+            s = generate_stockfish_instance()
+            s.set_fen_position(Board.board_state_to_fen(state))
+            print(s.get_board_visual())
         elif '--capture-frame' in argv:
-            camera.mock_frame_path = str(CALIBRATION_DIR.joinpath('all.jpg').absolute())
             frame = camera.capture_frame(correct_distortion='--raw-image' not in argv)
             if '--show-markers' in argv:
                 markers = Marker.extract_markers(frame)
                 draw_markers(frame, markers, point_only=True, primary_color=(255, 0, 0), secondary_color=(255, 0, 0))
                 adjust_markers(markers)
                 draw_markers(frame, markers, point_only=True, primary_color=(0, 255, 0), secondary_color=(0, 255, 0))
-            save_frame_to_runtime_dir(
-                frame, name=f"cf-{randint(0, 1000)}-{log.elapsed_time_raw()}"
-            )
+            save_frame_to_runtime_dir(frame)
+        elif '--capture-camera-distortion-images' in argv:
+            for i in range(12):
+                gantry.set_z_position(30)
+                gantry.set_z_position(0)
+                frame = camera.capture_frame(correct_distortion=False)
+                save_frame_to_runtime_dir(frame, calibration=True, name=f"cam-dis-{i}")
         else:
             exe_main()
     except KeyboardInterrupt:
