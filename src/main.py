@@ -381,7 +381,7 @@ if __name__ == "__main__":
                 save_frame_to_runtime_dir(frame, camera, calibration=True, name=f"cam-dis-{i}")
         elif '--test-exposure' in argv:
             for x in [0.0005, 0.001, 0.002, 0.003, 0.004, 0.005, 0.006]:
-                f = camera.capture_frame(exposure=x)
+                f = camera.capture_frame(exposure=x, correct_distortion=False)
                 f2 = Camera.adjust_frame_contrast_and_brightness(f, contrast=2, brightness=1.2)
                 save_frame_to_runtime_dir(f, camera, name=x)
                 m = Marker.extract_markers(f)
