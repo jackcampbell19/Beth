@@ -30,7 +30,7 @@ def cleanup_runtime_dir():
     log.info('Cleaning up runtime directory')
     image_retain_milliseconds = 1000 * 30
     for filename in os.listdir(IMAGES_DIR):
-        timestamp = filename.split('.')[0]
+        timestamp = filename.split('.')[0].split('-')[0]
         if timestamp.isnumeric():
             timestamp = int(timestamp)
             if Log.current_time_in_milliseconds() - timestamp < image_retain_milliseconds:
@@ -51,7 +51,7 @@ def cleanup_runtime_dir():
 
 
 @ensure_runtime_dir_exists
-def save_frame_to_runtime_dir(frame, camera, calibration=False, name=None):
+def save_frame_to_runtime_dir(frame, camera=None, calibration=False, name=None):
     """
     Saves a frame to the runtime dir.
     :param calibration: If true the file will be saved to the calibration dir
@@ -60,7 +60,9 @@ def save_frame_to_runtime_dir(frame, camera, calibration=False, name=None):
     :param camera: The camera object used to capture the frame.
     """
     data = Image.fromarray(frame)
-    image_name = f"{Log.current_time_in_milliseconds()}-{camera.exposure}"
+    image_name = f"{Log.current_time_in_milliseconds()}"
+    if camera is not None:
+        image_name += f"-e{str(camera.exposure)[:6]}"
     if name is not None:
         image_name += f"-{name}"
     path = f"{CALIBRATION_DIR if calibration else IMAGES_DIR}/{image_name}.jpg"
