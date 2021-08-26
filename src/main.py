@@ -386,6 +386,8 @@ if __name__ == "__main__":
                 m = Marker.extract_markers(f)
                 draw_markers(f, m)
                 save_frame_to_runtime_dir(f, camera, name=f"{x}-markers")
+                f = Camera.adjust_frame_contrast_and_brightness(f, contrast=2, brightness=1.2)
+                save_frame_to_runtime_dir(f, camera, name=f"{x}-cba")
         else:
             exe_main()
     except KeyboardInterrupt:

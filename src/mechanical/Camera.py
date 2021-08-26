@@ -99,4 +99,4 @@ class Camera:
     def adjust_frame_contrast_and_brightness(frame, contrast=1, brightness=0):
         if not 1 <= contrast <= 3:
             log.error(f"Contrast must be between 1 and 3. Provided {contrast}")
-        return cv2.convertScaleAbs(frame, alpha=contrast, beta=0)
+        return cv2.convertScaleAbs(frame, alpha=contrast, beta=brightness)
