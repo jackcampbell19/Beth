@@ -21,28 +21,33 @@ def ensure_runtime_dir_exists(func):
         for path in [RUNTIME_DIR_PATH, CALIBRATION_DIR, IMAGES_DIR, LOG_DIR]:
             if not os.path.exists(path):
                 os.mkdir(path)
-        image_retain_milliseconds = 1000 * 30
-        for filename in os.listdir(IMAGES_DIR):
-            timestamp = filename.split('.')[0]
-            if timestamp.isnumeric():
-                timestamp = int(timestamp)
-                if Log.current_time_in_milliseconds() - timestamp < image_retain_milliseconds:
-                    continue
-            image_path = str(IMAGES_DIR.joinpath(filename).absolute())
-            os.remove(image_path)
-            log.info(f"Removed image {filename} from runtime directory.")
-        log_retain_milliseconds = 60 * 60 * 12 * 1000
-        for filename in os.listdir(LOG_DIR):
-            timestamp = filename.split('.')[0]
-            if timestamp.isnumeric():
-                timestamp = int(timestamp)
-                if Log.current_time_in_milliseconds() - timestamp < log_retain_milliseconds:
-                    continue
-            log_path = str(LOG_DIR.joinpath(filename).absolute())
-            os.remove(log_path)
-            log.info(f"Removed image {filename} from runtime directory.")
         func(*args, **kwargs)
     return wrapper
+
+
+@ensure_runtime_dir_exists
+def cleanup_runtime_dir():
+    log.info('Cleaning up runtime directory')
+    image_retain_milliseconds = 1000 * 30
+    for filename in os.listdir(IMAGES_DIR):
+        timestamp = filename.split('.')[0]
+        if timestamp.isnumeric():
+            timestamp = int(timestamp)
+            if Log.current_time_in_milliseconds() - timestamp < image_retain_milliseconds:
+                continue
+        image_path = str(IMAGES_DIR.joinpath(filename).absolute())
+        os.remove(image_path)
+        log.info(f"Removed image {filename} from runtime/images")
+    log_retain_milliseconds = 60 * 60 * 12 * 1000
+    for filename in os.listdir(LOG_DIR):
+        timestamp = filename.split('.')[0]
+        if timestamp.isnumeric():
+            timestamp = int(timestamp)
+            if Log.current_time_in_milliseconds() - timestamp < log_retain_milliseconds:
+                continue
+        log_path = str(LOG_DIR.joinpath(filename).absolute())
+        os.remove(log_path)
+        log.info(f"Removed image {filename} from runtime/logs")
 
 
 @ensure_runtime_dir_exists

@@ -325,6 +325,7 @@ Execute main function.
 
 
 if __name__ == "__main__":
+    cleanup_runtime_dir()
     log.info(f"Program begin, argv: {argv}")
     SAVE_OUTPUT = '--save-output' in argv
     if SAVE_OUTPUT:
@@ -378,6 +379,10 @@ if __name__ == "__main__":
                 gantry.set_z_position(0)
                 frame = camera.capture_frame(correct_distortion=False)
                 save_frame_to_runtime_dir(frame, calibration=True, name=f"cam-dis-{i}")
+        elif '--test-exposure' in argv:
+            for x in [0.001, 0.002, 0.003, 0.004, 0.005, 0.006, 0.007, 0.008, 0.009, 0.01, 0.015, 0.02, 0.025, 0.03]:
+                f = camera.capture_frame(exposure=x)
+                save_frame_to_runtime_dir(f, name=f"exposure:{x}->{camera.exposure}")
         else:
             exe_main()
     except KeyboardInterrupt:

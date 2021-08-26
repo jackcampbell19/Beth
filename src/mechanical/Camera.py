@@ -27,8 +27,9 @@ class Camera:
         self.mock_frame_path = None
         self.latest_frame = None
         self.frame_center = np.array([self.frame_size[0] / 2, self.frame_size[1] / 2])
+        self.exposure = None
 
-    def generate_camera(self):
+    def generate_camera(self, exposure=None):
         """
         Generates and returns a new camera instance.
         :return:
@@ -38,10 +39,10 @@ class Camera:
         camera.set(cv2.CAP_PROP_FRAME_HEIGHT, self.frame_size[1])
         camera.set(cv2.CAP_PROP_BUFFERSIZE, 3)
         e = camera.get(cv2.CAP_PROP_EXPOSURE)
-        # camera.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.25)
-        # 0.002 and 0.003 are good for bright light, daytime for example.
-        # daytime = 0.002
-        # camera.set(cv2.CAP_PROP_EXPOSURE, daytime)
+        if exposure is not None:
+            camera.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.25)
+            camera.set(cv2.CAP_PROP_EXPOSURE, exposure)
+        self.exposure = camera.get(cv2.CAP_PROP_EXPOSURE)
         for _ in range(25):
             _, _ = camera.read()
         return camera
@@ -68,10 +69,11 @@ class Camera:
         undistorted_img = cv2.remap(frame, m1, m2, interpolation=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
         return undistorted_img
 
-    def capture_frame(self, correct_distortion=True):
+    def capture_frame(self, correct_distortion=True, exposure=None):
         """
         Captures a raw frame from the camera.
         :param correct_distortion: Tell the function if it should correct for distortion.
+        :param exposure: Exposure to capture.
         :return: np array of pixel data
         """
         if self.mock_frame_path is not None:
@@ -80,7 +82,7 @@ class Camera:
             self.latest_frame = frame
             return frame
         log.info('Warming camera up.')
-        camera = self.generate_camera()
+        camera = self.generate_camera(exposure)
         log.info(f"Capturing frame from camera with"
                  f"{'' if correct_distortion else ' no'} distortion correction.")
         ret, frame = camera.read()
