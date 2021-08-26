@@ -382,7 +382,11 @@ if __name__ == "__main__":
         elif '--test-exposure' in argv:
             for x in [0.001, 0.002, 0.003, 0.004, 0.005, 0.006, 0.007, 0.008, 0.009, 0.01, 0.015, 0.02, 0.025, 0.03]:
                 f = camera.capture_frame(exposure=x)
-                save_frame_to_runtime_dir(f, name=f"exposure:{x}->{camera.exposure}")
+                n = f"{x}-{randint(10000, 99999)}"
+                save_frame_to_runtime_dir(f, name=n)
+                m = Marker.extract_markers(f)
+                draw_markers(f, m)
+                save_frame_to_runtime_dir(f, name=f"{n}-markers")
         else:
             exe_main()
     except KeyboardInterrupt:
