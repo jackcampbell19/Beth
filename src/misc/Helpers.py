@@ -51,16 +51,19 @@ def cleanup_runtime_dir():
 
 
 @ensure_runtime_dir_exists
-def save_frame_to_runtime_dir(frame, calibration=False, name=None):
+def save_frame_to_runtime_dir(frame, camera, calibration=False, name=None):
     """
     Saves a frame to the runtime dir.
     :param calibration: If true the file will be saved to the calibration dir
     :param name: Name of the file
-    :param frame: THe frame to save
+    :param frame: The frame to save
+    :param camera: The camera object used to capture the frame.
     """
     data = Image.fromarray(frame)
-    path = f"{CALIBRATION_DIR if calibration else IMAGES_DIR}" \
-           f"/{name if name is not None else Log.current_time_in_milliseconds()}.jpg"
+    image_name = f"{Log.current_time_in_milliseconds()}-{camera.exposure}"
+    if name is not None:
+        image_name += f"-{name}"
+    path = f"{CALIBRATION_DIR if calibration else IMAGES_DIR}/{image_name}.jpg"
     log.info(f"Saving frame to {path}")
     data.save(path)
 

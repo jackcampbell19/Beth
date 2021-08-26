@@ -172,7 +172,7 @@ def get_board_state(save_images=False):
         gantry.set_position(x, y)
         markers, frame = take_snapshot()
         if save_images:
-            save_frame_to_runtime_dir(frame)
+            save_frame_to_runtime_dir(frame, camera)
         for marker in markers:
             piece_id = board.translate_fid_to_piece(marker.id)
             sid = key_position.get_closest_sid(marker.center)
@@ -221,7 +221,7 @@ Define exe function.
 
 
 def exe_capture_calibration_image(name):
-    save_frame_to_runtime_dir(camera.capture_frame(), calibration=True, name=name)
+    save_frame_to_runtime_dir(camera.capture_frame(), camera, calibration=True, name=name)
 
 
 def exe_remote_control():
@@ -372,21 +372,20 @@ if __name__ == "__main__":
                 draw_markers(frame, markers, point_only=True, primary_color=(255, 0, 0), secondary_color=(255, 0, 0))
                 adjust_markers(markers)
                 draw_markers(frame, markers, point_only=True, primary_color=(0, 255, 0), secondary_color=(0, 255, 0))
-            save_frame_to_runtime_dir(frame)
+            save_frame_to_runtime_dir(frame, camera)
         elif '--capture-camera-distortion-images' in argv:
             for i in range(12):
                 gantry.set_z_position(30)
                 gantry.set_z_position(0)
                 frame = camera.capture_frame(correct_distortion=False)
-                save_frame_to_runtime_dir(frame, calibration=True, name=f"cam-dis-{i}")
+                save_frame_to_runtime_dir(frame, camera, calibration=True, name=f"cam-dis-{i}")
         elif '--test-exposure' in argv:
-            for x in [0.001, 0.002, 0.003, 0.004, 0.005, 0.006, 0.007, 0.008, 0.009, 0.01, 0.015, 0.02, 0.025, 0.03]:
+            for x in [0.0005, 0.001, 0.002, 0.003, 0.004, 0.005, 0.006, 0.007, 0.008, 0.009, 0.01, 0.015, 0.02, 0.025, 0.03]:
                 f = camera.capture_frame(exposure=x)
-                n = f"{x}-{randint(10000, 99999)}"
-                save_frame_to_runtime_dir(f, name=n)
+                save_frame_to_runtime_dir(f, camera, name=x)
                 m = Marker.extract_markers(f)
                 draw_markers(f, m)
-                save_frame_to_runtime_dir(f, name=f"{n}-markers")
+                save_frame_to_runtime_dir(f, camera, name=f"{x}-markers")
         else:
             exe_main()
     except KeyboardInterrupt:
