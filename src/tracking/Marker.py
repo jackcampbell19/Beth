@@ -41,7 +41,6 @@ class Marker:
         aruco_dict = aruco.Dictionary_get(marker_type)
         parameters = aruco.DetectorParameters_create()
         corners, ids, rejected = aruco.detectMarkers(frame, aruco_dict, parameters=parameters)
-        print('rejected:', rejected)
         markers = []
         for x in range(len(corners)):
             fid = str(ids[x][0])

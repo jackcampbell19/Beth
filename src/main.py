@@ -381,16 +381,11 @@ if __name__ == "__main__":
         elif '--test-exposure' in argv:
             #for x in [0.0005, 0.001, 0.002, 0.003, 0.004, 0.005, 0.006]:
             for x in [0.002, 0.004, 0.01]:
-                f = camera.capture_frame(exposure=x, correct_distortion=False)
-                norm_image = cv2.normalize(f, None, alpha=0, beta=1, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_32F)
-                print(f)
-                print('\n\n\n')
-                print(norm_image)
+                f = camera.capture_frame(exposure=x)
                 save_frame_to_runtime_dir(f, camera, name=x)
                 m = Marker.extract_markers(f)
                 draw_markers(f, m)
                 save_frame_to_runtime_dir(f, camera, name=f"{x}-markers")
-                save_frame_to_runtime_dir(norm_image, camera, name=f"{x}-norm")
         else:
             exe_main()
     except KeyboardInterrupt:
