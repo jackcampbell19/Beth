@@ -13,7 +13,6 @@ from src.misc.Exceptions import BoardPieceViolation, InvalidMove
 from src.misc.Helpers import *
 from src.calibration.Calibration import calculate_fid_correction_coefficients
 from src.misc.Log import log
-from random import randint
 from src.audio.Audio import play_audio_ids, AUDIO_IDS
 from stockfish import Stockfish
 
