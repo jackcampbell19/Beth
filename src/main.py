@@ -383,6 +383,9 @@ if __name__ == "__main__":
             for x in [0.002, 0.004, 0.01]:
                 f = camera.capture_frame(exposure=x, correct_distortion=False)
                 norm_image = cv2.normalize(f, None, alpha=0, beta=1, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_32F)
+                print(f)
+                print('\n\n\n')
+                print(norm_image)
                 save_frame_to_runtime_dir(f, camera, name=x)
                 m = Marker.extract_markers(f)
                 draw_markers(f, m)
