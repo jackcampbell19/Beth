@@ -380,7 +380,7 @@ if __name__ == "__main__":
                 frame = camera.capture_frame(correct_distortion=False)
                 save_frame_to_runtime_dir(frame, camera, calibration=True, name=f"cam-dis-{i}")
         elif '--test-exposure' in argv:
-            for x in [0.0005, 0.001, 0.002, 0.003, 0.004, 0.005, 0.006, 0.007, 0.008, 0.009, 0.01, 0.015, 0.02, 0.025, 0.03]:
+            for x in [0.0005, 0.001, 0.002, 0.003, 0.004, 0.005, 0.006]:
                 f = camera.capture_frame(exposure=x)
                 f2 = Camera.adjust_frame_contrast_and_brightness(f, contrast=2, brightness=1.2)
                 save_frame_to_runtime_dir(f, camera, name=x)
