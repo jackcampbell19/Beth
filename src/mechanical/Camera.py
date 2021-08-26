@@ -35,8 +35,9 @@ class Camera:
         :return:
         """
         camera = cv2.VideoCapture(self.index)
-        camera.set(cv2.CAP_PROP_FRAME_WIDTH, self.frame_size[0])
-        camera.set(cv2.CAP_PROP_FRAME_HEIGHT, self.frame_size[1])
+        print(camera.get(cv2.CAP_PROP_FRAME_WIDTH), camera.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        # camera.set(cv2.CAP_PROP_FRAME_WIDTH, self.frame_size[0])
+        # camera.set(cv2.CAP_PROP_FRAME_HEIGHT, self.frame_size[1])
         camera.set(cv2.CAP_PROP_BUFFERSIZE, 3)
         e = camera.get(cv2.CAP_PROP_EXPOSURE)
         if exposure is not None:
