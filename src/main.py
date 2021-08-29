@@ -274,7 +274,7 @@ def exe_capture_key_position_images():
             marker = found_markers[0]
             sid_center_positions[sid] = list([int(v) for v in marker.center])
             draw_markers(frame, [marker])
-        exe_capture_calibration_image(f"key-position-{x}x{y}")
+        save_frame_to_runtime_dir(frame, camera, calibration=True, name=f"key-position-{x}x{y}")
         log.info(f"Visible squares for key position at {key_position.gantry_position}:\n{json.dumps(sid_center_positions)}")
     gantry.set_position(0, 0)
 
