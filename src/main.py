@@ -365,7 +365,7 @@ if __name__ == "__main__":
             s.set_fen_position(Board.board_state_to_fen(state))
             print(s.get_board_visual())
         elif '--capture-frame' in argv:
-            frame = camera.capture_frame(correct_distortion='--raw-image' not in argv)
+            frame = camera.capture_frame(correct_distortion='--raw-image' not in argv, exposure=0.006)
             if '--show-markers' in argv:
                 markers = Marker.extract_markers(frame)
                 draw_markers(frame, markers, point_only=True, primary_color=(255, 0, 0), secondary_color=(255, 0, 0))
