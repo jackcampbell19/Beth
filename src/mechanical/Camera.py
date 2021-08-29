@@ -71,7 +71,7 @@ class Camera:
 
     def capture_frame(self, correct_distortion=True, exposure=None):
         """
-        Captures a raw frame from the camera.
+        Captures a raw BGR color frame from the camera. Corrects distortion if necessary.
         :param correct_distortion: Tell the function if it should correct for distortion.
         :param exposure: Exposure to capture.
         :return: np array of pixel data
@@ -89,7 +89,6 @@ class Camera:
         if not ret:
             raise CameraError('Failed to read from from camera.')
         camera.release()
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         if correct_distortion:
             frame = self.correct_distortion(frame)
         self.latest_frame = frame
