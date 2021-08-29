@@ -37,14 +37,14 @@ class Marker:
     @staticmethod
     def extract_markers(frame, marker_family):
         """
-        Takes in a BGR color frame and extracts all of the apriltag markers present. Returns a list of markers.
+        Takes in a RGB color frame and extracts all of the apriltag markers present. Returns a list of markers.
         :param frame: The frame to search.
         :param marker_family: The marker family to search for.
         :return: {[Marker]} List of markers
         """
         log.info('Extracting apriltag markers from camera frame.')
         markers = []
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        gray = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
         options = apriltag.DetectorOptions(families=marker_family)
         detector = apriltag.Detector(options)
         results = detector.detect(gray)
