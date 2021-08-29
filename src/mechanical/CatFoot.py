@@ -34,6 +34,9 @@ def p_out(pin, val):
 
 class Button:
 
+    PUSH_DOWN = 0
+    PUSH_DOWN_UP = 1
+
     def __init__(self, pin):
         self.pin = pin
         gpio.setup(pin, gpio.IN, pull_up_down=gpio.PUD_UP)
@@ -45,9 +48,19 @@ class Button:
     def delay():
         time.sleep(0.01)
 
-    def wait_until_pressed(self):
-        while not self.is_pressed():
-            self.delay()
+    def wait_until_pressed(self, press_type=PUSH_DOWN):
+        time_pressed = 0
+        if press_type == Button.PUSH_DOWN:
+            while not self.is_pressed():
+                self.delay()
+        elif press_type == Button.PUSH_DOWN_UP:
+            while not self.is_pressed():
+                self.delay()
+            press_start = time.time()
+            while self.is_pressed():
+                self.delay()
+            time_pressed = int(time.time() - press_start)
+        return time_pressed
 
 
 class Electromagnet:
