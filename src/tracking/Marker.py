@@ -15,6 +15,7 @@ class Marker:
         p0 = (corners[0] + corners[1]) / 2
         p1 = (corners[2] + corners[3]) / 2
         self.center = (p0 + p1) / 2
+        self.center = (int(self.center[0]), int(self.center[1]))
 
     def __repr__(self):
         return f"Marker(id: {self.id}, center: {self.center})"
