@@ -46,10 +46,22 @@ class Marker:
         results = detector.detect(gray)
         for r in results:
             c0, c1, c2, c3 = r.corners
-            c0 = (int(c0[0]), int(c0[1]))
-            c1 = (int(c1[0]), int(c1[1]))
-            c2 = (int(c2[0]), int(c2[1]))
-            c3 = (int(c3[0]), int(c3[1]))
+            c0 = np.array([
+                int(c0[0]),
+                int(c0[1])
+            ])
+            c1 = np.array([
+                int(c1[0]),
+                int(c1[1])
+            ])
+            c2 = np.array([
+                int(c2[0]),
+                int(c2[1])
+            ])
+            c3 = np.array([
+                int(c3[0]),
+                int(c3[1])
+            ])
             fid = str(r.tag_id)
             markers.append(
                 Marker(
