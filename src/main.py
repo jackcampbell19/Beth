@@ -152,7 +152,7 @@ def take_snapshot():
     """
     log.info('Taking snapshot from camera.')
     frame = camera.capture_frame()
-    markers = Marker.extract_markers(frame)
+    markers = Marker.extract_markers(frame, marker_family=Marker.FAMILY_tag16h5)
     adjust_markers(markers)
     return markers, frame
 
@@ -263,7 +263,7 @@ def exe_capture_key_position_images():
         x, y = key_position.gantry_position
         gantry.set_position(x, y)
         frame = camera.capture_frame()
-        markers = Marker.extract_markers(frame)
+        markers = Marker.extract_markers(frame, marker_family=Marker.FAMILY_tag36h11)
         sid_center_positions = {}
         for sid in key_position.sid_fid_mapping:
             fid = key_position.sid_fid_mapping[sid]
@@ -367,7 +367,7 @@ if __name__ == "__main__":
         elif '--capture-frame' in argv:
             frame = camera.capture_frame(correct_distortion='--raw-image' not in argv)
             if '--show-markers' in argv:
-                markers = Marker.extract_markers(frame)
+                markers = Marker.extract_markers(frame, marker_family=Marker.FAMILY_tag36h11 if '--36h11' in argv else Marker.FAMILY_tag16h5)
                 draw_markers(frame, markers, point_only=True, primary_color=(255, 0, 0), secondary_color=(255, 0, 0))
                 adjust_markers(markers)
                 draw_markers(frame, markers, point_only=True, primary_color=(0, 255, 0), secondary_color=(0, 255, 0))

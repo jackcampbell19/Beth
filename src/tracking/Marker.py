@@ -9,6 +9,9 @@ class Marker:
     Represents a fiducial marker.
     """
 
+    FAMILY_tag16h5 = 'tag16h5'
+    FAMILY_tag36h11 = 'tag36h11'
+
     def __init__(self, fid, corners):
         self.id = str(fid)
         self.corners = np.array(corners)
@@ -32,7 +35,7 @@ class Marker:
         return [marker.id for marker in markers]
 
     @staticmethod
-    def extract_markers(frame, marker_family='tag16h5'):
+    def extract_markers(frame, marker_family):
         """
         Takes in a BGR color frame and extracts all of the apriltag markers present. Returns a list of markers.
         :param frame: The frame to search.
