@@ -372,12 +372,10 @@ if __name__ == "__main__":
                 adjust_markers(markers)
                 draw_markers(frame, markers, point_only=True, primary_color=(0, 255, 0), secondary_color=(0, 255, 0))
             save_frame_to_runtime_dir(frame, camera)
-            frame1 = Camera.blur_frame(frame, 5)
-            frame2 = Camera.blur_frame(frame, 10)
-            frame3 = Camera.blur_frame(frame, 15)
-            save_frame_to_runtime_dir(frame1, camera, name='b5')
-            save_frame_to_runtime_dir(frame2, camera, name='b10')
-            save_frame_to_runtime_dir(frame3, camera, name='b15')
+            frame_b3 = Camera.blur_frame(frame, 3)
+            frame_b5 = Camera.blur_frame(frame, 5)
+            save_frame_to_runtime_dir(frame_b3, camera, name='b3')
+            save_frame_to_runtime_dir(frame_b5, camera, name='b5')
         elif '--capture-camera-distortion-images' in argv:
             for i in range(12):
                 gantry.set_z_position(30)
