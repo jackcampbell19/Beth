@@ -110,7 +110,6 @@ def calculate_fid_correction_coefficients(frame_center):
         x = bv[0] / tv[0]
         y = bv[1] / tv[1]
         fcc[tm.id] = (x + y) / 2
-        print(x, y, (x + y) / 2)
     log.info(f"FCC:\n{json.dumps(fcc)}")
 
 
