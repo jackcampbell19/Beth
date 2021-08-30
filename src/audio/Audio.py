@@ -1,9 +1,12 @@
 import pyttsx3
 import pathlib
 import time
+from sys import argv
 
 from os import environ
 environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
+
+SKIP_AUDIO = '--skip-audio' in argv
 
 import pygame
 import random
@@ -59,6 +62,8 @@ def play_audio_ids(*ids):
     Plays the audio ids in the order they are listed. If a list of audio ids is
     supplied as
     """
+    if SKIP_AUDIO:
+        return
     pygame.mixer.init()
     for i in ids:
         if len(i) == 0:

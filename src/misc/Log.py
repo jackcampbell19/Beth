@@ -6,9 +6,10 @@ class Log:
     Logging class for debugging and monitoring.
     """
 
-    LOG_INFO = True
-    INIT_TIME = time.time()
-    SAVE_OUTPUT = False
+    log_info = True
+    init_time = time.time()
+    save_output = False
+    file = None
 
     def elapsed_time(self):
         return f"\033[37m({self.elapsed_time_raw()}ms)\033[0m"
@@ -17,14 +18,21 @@ class Log:
         """
         Elapsed time in milliseconds.
         """
-        return int((time.time() - self.INIT_TIME) * 1000)
+        return int((time.time() - self.init_time) * 1000)
+
+    def enable_save_output(self, path):
+        self.save_output = True
+        self.file = open(f"{path}/{Log.current_time_in_milliseconds()}.log", 'a+')
+
+    def close_file(self):
+        self.file.close()
 
     @staticmethod
     def current_time_in_milliseconds():
         return int(time.time() * 1000)
 
     def info(self, message):
-        if not self.LOG_INFO:
+        if not self.log_info:
             return
         self.write_line(f"\033[32m[INFO]\033[0m {self.elapsed_time()} {message}")
 
@@ -38,8 +46,11 @@ class Log:
         self.write_line(f"\033[35m[DEBUG]\033[0m {self.elapsed_time()} {message}")
 
     def write_line(self, line):
-        if self.SAVE_OUTPUT:
-            pass
+        if self.save_output:
+            stripped_line = line
+            for x in [0, 31, 33, 32, 35, 37]:
+                stripped_line = stripped_line.replace(f"\033[{x}m", '')
+            self.file.write(stripped_line + '\n')
         print(line)
 
 

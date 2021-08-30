@@ -1,7 +1,8 @@
 import sys
 from src.misc.Log import log
 
-if "--mock-gpio" in sys.argv:
+mock_gpio_enabled = "--mock-gpio" in sys.argv
+if mock_gpio_enabled:
     log.info("--mock-gpio enabled. All GPIO setup and output will be mocked.")
     from src.misc.MockGPIO import MockGPIO as gpio
 else:
@@ -49,6 +50,8 @@ class Button:
         time.sleep(0.01)
 
     def wait_until_pressed(self, press_type=PUSH_DOWN):
+        if mock_gpio_enabled:
+            return 0
         time_pressed = 0
         if press_type == Button.PUSH_DOWN:
             while not self.is_pressed():
@@ -258,6 +261,8 @@ class Stepper:
         :param min_delay:
         :param steppers: {list(Stepper)} Steppers to move.
         """
+        if mock_gpio_enabled:
+            return
         required_steps = [s.get_required_steps_for_target() for s in steppers]
         completed = [False if required_steps[i] > 0 else True for i in range(len(steppers))]
         max_steps = max(required_steps)

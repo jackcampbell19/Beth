@@ -47,7 +47,7 @@ class Marker:
         :return: {[Marker]} List of markers
         """
         log.info('Extracting apriltag markers from camera frame.'
-                 + ' Checking for inverted markers as well.' if scan_for_inverted_markers else '')
+                 + (' Checking for inverted markers as well.' if scan_for_inverted_markers else ''))
         markers = []
         options = apriltag.DetectorOptions(families=marker_family)
         detector = apriltag.Detector(options)

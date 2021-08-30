@@ -5,6 +5,8 @@ from sys import argv, path
 src = pathlib.Path(__file__).parent.absolute()
 path.append(str(src.parent.absolute()))
 
+LOG_DIR = str(src.parent.absolute().joinpath('runtime').absolute().joinpath('logs').absolute())
+
 from src.tracking.Board import Board, KeyPosition
 from src.tracking.Marker import Marker
 from src.mechanical.Camera import Camera
@@ -33,7 +35,6 @@ if '--help' in argv:
 Initialize global objects/variables using the config file.
 """
 log.info('Initializing components.')
-SAVE_OUTPUT = False
 # Read the config file
 f = open(str(src.parent.joinpath('config.json').absolute()))
 config = json.load(f)
@@ -343,12 +344,9 @@ Execute main function.
 
 
 if __name__ == "__main__":
+    log.enable_save_output(path=LOG_DIR)
     cleanup_runtime_dir()
     log.info(f"Program begin, argv: {argv}")
-    SAVE_OUTPUT = '--save-output' in argv
-    if SAVE_OUTPUT:
-        log.SAVE_OUTPUT = True
-        log.info('Save output enabled.')
     try:
         if '--remote-control' in argv:
             exe_remote_control()
@@ -399,8 +397,11 @@ if __name__ == "__main__":
             exe_main()
     except KeyboardInterrupt:
         log.info('Program ended due to KeyboardInterrupt.')
-        exit(0)
+    except Exception as e:
+        log.error(f"Program execution failed. {e}")
     # Return gantry to origin and cleanup gpio
     gantry.set_position(0, 0)
     gantry.set_z_position(0)
     gantry.release_grip()
+    # Close the log file
+    log.close_file()
