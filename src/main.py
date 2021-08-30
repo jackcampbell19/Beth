@@ -231,12 +231,15 @@ def play_game():
         except InvalidMove:
             log.error('Invalid move detected.')
             continue
+        log.info(f"Detected move {detected_move} from player")
         state_history.append(board_state)
         moves.append(detected_move)
         stockfish.set_position(moves)
+        log.debug(stockfish.get_fen_position())
         generated_move = stockfish.get_best_move_time(2)
         if generated_move is None:
             break
+        log.info(f"Making move {generated_move}")
         make_move(generated_move, board_state)
 
 
