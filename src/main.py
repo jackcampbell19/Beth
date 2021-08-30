@@ -366,16 +366,19 @@ if __name__ == "__main__":
             print(s.get_board_visual())
         elif '--capture-frame' in argv:
             frame = camera.capture_frame(correct_distortion='--raw-image' not in argv)
+            name = None
+            if '--b5' in argv:
+                frame = Camera.blur_frame(frame, 5)
+                name = 'b5'
+            if '--b3' in argv:
+                frame = Camera.blur_frame(frame, 3)
+                name = 'b3'
             if '--show-markers' in argv:
                 markers = Marker.extract_markers(frame, marker_family=Marker.FAMILY_tag36h11 if '--36h11' in argv else Marker.FAMILY_tag16h5)
                 draw_markers(frame, markers, point_only=True, primary_color=(255, 0, 0), secondary_color=(255, 0, 0))
                 adjust_markers(markers)
                 draw_markers(frame, markers, point_only=True, primary_color=(0, 255, 0), secondary_color=(0, 255, 0))
-            save_frame_to_runtime_dir(frame, camera)
-            frame_b3 = Camera.blur_frame(frame, 3)
-            frame_b5 = Camera.blur_frame(frame, 5)
-            save_frame_to_runtime_dir(frame_b3, camera, name='b3')
-            save_frame_to_runtime_dir(frame_b5, camera, name='b5')
+            save_frame_to_runtime_dir(frame, camera, name=name)
         elif '--capture-camera-distortion-images' in argv:
             for i in range(12):
                 gantry.set_z_position(30)
