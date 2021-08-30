@@ -223,6 +223,7 @@ def play_game():
         AUDIO_IDS.GOOD_LUCK
     ])
     while True:
+        log.info('Waiting for player move')
         wait_for_player_button_press()
         board_state = get_board_state()
         previous_state = state_history[-1]
@@ -238,10 +239,12 @@ def play_game():
         moves.append(detected_move)
         log.debug(f"Moves: {moves}")
         stockfish.set_position(moves)
-        log.debug(f"Making move from current board:\n{stockfish.get_board_visual()}")
+        log.debug(f"Making move from current board:\n{stockfish.get_board_visual()}{stockfish.get_fen_position()}")
         generated_move = stockfish.get_best_move_time(2)
         if generated_move is None:
             break
+        moves.append(generated_move)
+        state_history.append(Board.fen_to_board_state(stockfish.get_fen_position()))
         log.info(f"Making move {generated_move}")
         make_move(generated_move, board_state)
 
