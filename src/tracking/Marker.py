@@ -42,6 +42,7 @@ class Marker:
         Takes in a RGB color frame and extracts all of the apriltag markers present. Returns a list of markers.
         :param frame: The frame to search.
         :param marker_family: The marker family to search for.
+        :param scan_for_inverted_markers: Determines if the image should be checked for markers that are inverted.
         :return: {[Marker]} List of markers
         """
         log.info('Extracting apriltag markers from camera frame.'
@@ -50,6 +51,7 @@ class Marker:
         options = apriltag.DetectorOptions(families=marker_family)
         detector = apriltag.Detector(options)
         gray = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
+        gray = Camera.blur_frame(gray, 3)
         results = detector.detect(gray)
         if scan_for_inverted_markers:
             results += detector.detect(Camera.invert_colors(gray))
