@@ -74,8 +74,8 @@ def save_frame_to_runtime_dir(frame, camera=None, calibration=False, name=None):
 def draw_markers(frame, markers, board=None, point_only=False, primary_color=(100, 255, 0), secondary_color=(150, 150, 255)):
     for marker in markers:
         if not point_only:
-            for i in range(4):
-                cv2.line(frame, tuple(marker.corners[i]), tuple(marker.corners[(i + 1) % 4]), primary_color, 3)
+            # for i in range(4):
+            #     cv2.line(frame, tuple(marker.corners[i]), tuple(marker.corners[(i + 1) % 4]), primary_color, 3)
             text = marker.id
             if board is not None:
                 try:
