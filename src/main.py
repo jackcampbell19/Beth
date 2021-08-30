@@ -385,9 +385,9 @@ if __name__ == "__main__":
             if '--show-markers' in argv:
                 tag = Marker.FAMILY_tag36h11 if '--36h11' in argv else Marker.FAMILY_tag16h5
                 markers = Marker.extract_markers(frame, marker_family=tag, scan_for_inverted_markers=True)
-                draw_markers(frame, markers, board=board, primary_color=(255, 0, 0), secondary_color=(255, 0, 0))
-                adjust_markers(markers)
-                draw_markers(frame, markers, point_only=True, primary_color=(0, 255, 0), secondary_color=(0, 255, 0))
+                draw_markers(frame, markers, board=board, primary_color=(107, 3, 252), secondary_color=(3, 252, 161))
+                # adjust_markers(markers)
+                # draw_markers(frame, markers, point_only=True, primary_color=(0, 255, 0), secondary_color=(0, 255, 0))
             save_frame_to_runtime_dir(frame, camera)
         elif '--capture-camera-distortion-images' in argv:
             for i in range(12):
