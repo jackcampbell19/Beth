@@ -92,7 +92,6 @@ class Camera:
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         if correct_distortion:
             frame = self.correct_distortion(frame)
-        frame = Camera.blur_frame(frame, 5)
         self.latest_frame = frame
         return frame
 
