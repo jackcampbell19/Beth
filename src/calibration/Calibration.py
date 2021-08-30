@@ -30,7 +30,7 @@ def calibrate_distortion_correction_k_d(image_dir, checkerboard_dimensions=(6, 9
     obj_points = []  # 3d point in real world space
     img_points = []  # 2d points in image plane.
     images = os.listdir(image_dir)
-    images = list(filter(lambda x: x.startswith('cam-dis'), images))
+    images = list(filter(lambda x: 'cam-dis' in x, images))
     images = list(map(lambda x: str(CALIBRATION_DIR.joinpath(x).absolute()), images))
     prop_sh = None
     for f_name in images:
@@ -85,8 +85,8 @@ def calculate_fid_correction_coefficients(frame_center):
         return
     top_frame = cv2.imread(str(top_img.absolute()))
     base_frame = cv2.imread(str(base_img.absolute()))
-    top_markers = Marker.extract_markers(top_frame)
-    base_markers = Marker.extract_markers(base_frame)
+    top_markers = Marker.extract_markers(top_frame, marker_family=Marker.FAMILY_tag16h5)
+    base_markers = Marker.extract_markers(base_frame, marker_family=Marker.FAMILY_tag16h5)
     draw_markers(top_frame, top_markers)
     cv2.imshow('top', top_frame)
     cv2.waitKey(1)
