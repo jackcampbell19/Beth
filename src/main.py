@@ -57,7 +57,7 @@ camera = Camera(
     frame_size=[config['camera']['width'], config['camera']['height']],
     k=config['camera']['calibration']['k'],
     d=config['camera']['calibration']['d'],
-    frame_center=[982, 543]
+    frame_center=config['camera']['corrected-center']
 )
 # Init the board
 board = Board(

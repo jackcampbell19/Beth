@@ -11,10 +11,6 @@
 * This will enable control of the machine from a terminal.
 * Example: `python3 main.py --remote-control`
 
-#### `--save-output`
-* This will save all output to the runtime directory.
-* Example: `python3 main.py --save-output`
-
 #### `--capture-key-positions`
 * Captures the key position images for visible square calibration.
 * Example: `python3 main.py --capture-key-position-images`
@@ -33,3 +29,9 @@
 
 #### `--capture-frame --raw-image? --show-markers?`
 * Captures a frame and saves it to the runtime directory. `--raw-image` and `--show-markers` are optional flags.
+
+#### `--make-move {move} {state}`
+
+#### `--get-board-state`
+
+#### `--capture-camera-distortion-images`
