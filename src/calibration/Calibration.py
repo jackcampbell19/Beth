@@ -86,17 +86,15 @@ def calculate_fid_correction_coefficients(frame_center):
     top_frame = cv2.imread(str(top_img.absolute()))
     base_frame = cv2.imread(str(base_img.absolute()))
     top_markers = Marker.extract_markers(top_frame, marker_family=Marker.FAMILY_tag16h5, scan_for_inverted_markers=True)
-    top_markers = list(filter(lambda m: np.linalg.norm(frame_center - m.center) < 600, top_markers))
+    valid_markers = ['0', '1', '2', '3', '4', '6', '14', '15', '16', '17', '19', '24']
+    top_markers = list(filter(lambda m: np.linalg.norm(frame_center - m.center) < 600 and m.id in valid_markers, top_markers))
     base_markers = Marker.extract_markers(base_frame, marker_family=Marker.FAMILY_tag16h5, scan_for_inverted_markers=True)
-    base_markers = list(filter(lambda m: np.linalg.norm(frame_center - m.center) < 600, base_markers))
+    base_markers = list(filter(lambda m: np.linalg.norm(frame_center - m.center) < 600 and m.id in valid_markers, base_markers))
     draw_markers(top_frame, top_markers)
-    cv2.imshow('top', top_frame)
-    cv2.waitKey(1)
-    time.sleep(1)
     draw_markers(base_frame, base_markers)
+    cv2.imshow('top', top_frame)
     cv2.imshow('base', base_frame)
-    cv2.waitKey(1)
-    time.sleep(1)
+    cv2.waitKey()
     present_top_marker_ids = [m.id for m in top_markers]
     present_base_marker_ids = [m.id for m in base_markers]
     if len(present_top_marker_ids) == 0 \
@@ -112,6 +110,7 @@ def calculate_fid_correction_coefficients(frame_center):
         x = bv[0] / tv[0]
         y = bv[1] / tv[1]
         fcc[tm.id] = (x + y) / 2
+        print(x, y, (x + y) / 2)
     log.info(f"FCC:\n{json.dumps(fcc)}")
 
 

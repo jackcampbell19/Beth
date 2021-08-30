@@ -357,7 +357,7 @@ if __name__ == "__main__":
         elif '--capture-fcc-base' in argv:
             exe_capture_calibration_image('fcc-base')
         elif '--calculate-fcc' in argv:
-            calculate_fid_correction_coefficients(camera.frame_center)
+            calculate_fid_correction_coefficients(np.array([982, 543]))
         elif '--determine-current-position' in argv:
             exe_determine_current_position()
         elif '--make-move' in argv:
