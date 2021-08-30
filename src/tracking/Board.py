@@ -122,10 +122,12 @@ class Board:
 
 class KeyPosition:
 
-    def __init__(self, position, sid_centers, sid_fid_mapping):
+    def __init__(self, position, sid_centers, sid_fid_mapping, x_range, y_range):
         self.gantry_position = position
         self.sid_centers = sid_centers
         self.sid_fid_mapping = sid_fid_mapping
+        self.x_range = x_range
+        self.y_range = y_range
 
     def get_closest_sid(self, pos):
         """

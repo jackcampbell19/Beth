@@ -45,7 +45,9 @@ key_positions = [
     KeyPosition(
         position=kp['gantry-position'],
         sid_centers=kp['sid-centers'],
-        sid_fid_mapping=kp['square-calibration-fid-mapping']
+        sid_fid_mapping=kp['square-calibration-fid-mapping'],
+        x_range=kp['x-range'],
+        y_range=kp['y-range']
     )
     for kp in config['key-positions']
 ]
@@ -147,6 +149,13 @@ def adjust_markers(markers):
         marker.center = np.array([int(x) for x in frame_center + vector * coefficient])
 
 
+def filter_markers_by_range(markers, x_range, y_range):
+    return list(filter(
+        lambda m: (x_range[0] <= m.center[0] <= x_range[1]) and (y_range[0] <= m.center[1] <= y_range[1]),
+        markers
+    ))
+
+
 def take_snapshot():
     """
     Captures a frame and returns a map of all markers present in the frame
@@ -173,7 +182,9 @@ def get_board_state(save_images=False):
         x, y = key_position.gantry_position
         gantry.set_position(x, y)
         markers, frame = take_snapshot()
+        markers = filter_markers_by_range(markers, x_range=key_position.x_range, y_range=key_position.y_range)
         if save_images:
+            draw_markers(frame, markers, board=board)
             save_frame_to_runtime_dir(frame, camera)
         for marker in markers:
             piece_id = board.translate_fid_to_piece(marker.id)
