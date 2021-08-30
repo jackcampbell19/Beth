@@ -237,16 +237,20 @@ def play_game():
         log.info(f"Detected move {detected_move} from player")
         state_history.append(board_state)
         moves.append(detected_move)
-        log.debug(f"Moves: {moves}")
+        log.debug(f"Previous moves: {moves}")
         stockfish.set_position(moves)
         log.debug(f"Making move from current board:\n{stockfish.get_board_visual()}{stockfish.get_fen_position()}")
         generated_move = stockfish.get_best_move_time(2)
         if generated_move is None:
             break
         moves.append(generated_move)
+        log.info(f"Moves: {moves}")
+        stockfish.set_position(moves)
         state_history.append(Board.fen_to_board_state(stockfish.get_fen_position()))
         log.info(f"Making move {generated_move}")
         make_move(generated_move, board_state)
+        x, y = key_positions[0].gantry_position
+        gantry.set_position(x, y)
 
 
 def check_for_game_options():
