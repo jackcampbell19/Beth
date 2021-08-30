@@ -247,7 +247,7 @@ Define exe function.
 
 
 def exe_capture_calibration_image(name):
-    save_frame_to_runtime_dir(camera.capture_frame(), camera, calibration=True, name=name)
+    save_frame_to_runtime_dir(camera.capture_frame(), calibration=True, name=name, name_only=True)
 
 
 def exe_remote_control():
