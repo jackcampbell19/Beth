@@ -85,8 +85,8 @@ def calculate_fid_correction_coefficients(frame_center):
         return
     top_frame = cv2.imread(str(top_img.absolute()))
     base_frame = cv2.imread(str(base_img.absolute()))
-    top_markers = Marker.extract_markers(top_frame, marker_family=Marker.FAMILY_tag16h5)
-    base_markers = Marker.extract_markers(base_frame, marker_family=Marker.FAMILY_tag16h5)
+    top_markers = Marker.extract_markers(top_frame, marker_family=Marker.FAMILY_tag16h5, scan_for_inverted_markers=True)
+    base_markers = Marker.extract_markers(base_frame, marker_family=Marker.FAMILY_tag16h5, scan_for_inverted_markers=True)
     draw_markers(top_frame, top_markers)
     cv2.imshow('top', top_frame)
     cv2.waitKey(1)
