@@ -385,7 +385,7 @@ if __name__ == "__main__":
             if '--show-markers' in argv:
                 tag = Marker.FAMILY_tag36h11 if '--36h11' in argv else Marker.FAMILY_tag16h5
                 markers = Marker.extract_markers(frame, marker_family=tag, scan_for_inverted_markers=True)
-                draw_markers(frame, markers, board=board, primary_color=(244, 3, 252), secondary_color=(3, 252, 206))
+                draw_markers(frame, markers, board=board, primary_color=(244, 3, 252), secondary_color=(252, 98, 3))
                 adjust_markers(markers)
                 draw_markers(frame, markers, point_only=True, primary_color=(107, 252, 3), secondary_color=(107, 252, 3))
             save_frame_to_runtime_dir(frame, camera)
