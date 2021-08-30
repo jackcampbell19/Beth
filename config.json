@@ -1,11 +1,17 @@
 {
   "fid-piece-mapping": {
-    "0": "k",
-    "1": "q",
-    "2": "b",
-    "3": "r",
-    "4": "n",
-    "6": "p"
+    "0": "K",
+    "1": "Q",
+    "2": "B",
+    "3": "R",
+    "4": "N",
+    "6": "P",
+    "14": "k",
+    "15": "q",
+    "16": "b",
+    "17": "n",
+    "19": "r",
+    "24": "p"
   },
   "game-options":{
     "180": "level-advanced",
@@ -14,6 +20,7 @@
     "183": "level-hard"
   },
   "fid-correction-coefficients": {
+
   },
   "camera": {
     "width": 1920,

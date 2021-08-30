@@ -1,3 +1,4 @@
+from src.misc.Exceptions import BoardPieceViolation
 from src.misc.Log import log, Log
 from PIL import Image
 import numpy as np
@@ -70,12 +71,18 @@ def save_frame_to_runtime_dir(frame, camera=None, calibration=False, name=None):
     data.save(path)
 
 
-def draw_markers(frame, markers, point_only=False, primary_color=(100, 255, 0), secondary_color=(150, 150, 255)):
+def draw_markers(frame, markers, board=None, point_only=False, primary_color=(100, 255, 0), secondary_color=(150, 150, 255)):
     for marker in markers:
         if not point_only:
             for i in range(4):
                 cv2.line(frame, tuple(marker.corners[i]), tuple(marker.corners[(i + 1) % 4]), primary_color, 3)
-            cv2.putText(frame, marker.id, tuple(marker.corners[0]), cv2.FONT_HERSHEY_SIMPLEX, 1, secondary_color, 3)
+            text = marker.id
+            if board is not None:
+                try:
+                    text = board.translate_fid_to_piece(marker.id)
+                except BoardPieceViolation:
+                    pass
+            cv2.putText(frame, text, tuple(marker.corners[0]), cv2.FONT_HERSHEY_SIMPLEX, 1, secondary_color, 3)
         cv2.drawMarker(frame, tuple(marker.center), primary_color, cv2.MARKER_CROSS, 20, 3)
 
 
