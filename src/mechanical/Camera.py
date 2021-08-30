@@ -107,4 +107,4 @@ class Camera:
 
     @staticmethod
     def invert_colors(frame):
-        return cv2.invert(frame)
+        return cv2.bitwise_not(frame)
