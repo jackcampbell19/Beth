@@ -51,7 +51,7 @@ class Marker:
         options = apriltag.DetectorOptions(families=marker_family)
         detector = apriltag.Detector(options)
         gray = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
-        gray = Camera.blur_frame(gray, 3)
+        gray = Camera.blur_frame(gray, 2)
         results = detector.detect(gray)
         if scan_for_inverted_markers:
             results += detector.detect(Camera.invert_colors(gray))
