@@ -156,6 +156,13 @@ def filter_markers_by_range(markers, x_range, y_range):
     ))
 
 
+def filter_markers_by_id(markers, valid_ids):
+    return list(filter(
+        lambda m: m.id in valid_ids,
+        markers
+    ))
+
+
 def take_snapshot():
     """
     Captures a frame and returns a map of all markers present in the frame
@@ -183,6 +190,7 @@ def get_board_state(save_images=False):
         gantry.set_position(x, y)
         markers, frame = take_snapshot()
         markers = filter_markers_by_range(markers, x_range=key_position.x_range, y_range=key_position.y_range)
+        markers = filter_markers_by_id(markers, valid_ids=board.piece_fids)
         if save_images:
             draw_markers(frame, markers, board=board)
             save_frame_to_runtime_dir(frame, camera)
@@ -190,7 +198,7 @@ def get_board_state(save_images=False):
             piece_id = board.translate_fid_to_piece(marker.id)
             sid = key_position.get_closest_sid(marker.center)
             if sid in board_state and board_state[sid] != piece_id:
-                raise BoardPieceViolation(f"Two pieces found in the same square: {sid}")
+                raise BoardPieceViolation(f"Two pieces ({board_state[sid]}, {piece_id}) found in the same square: {sid}")
             board_state[sid] = piece_id
     log.info(f"Board state: {board_state}")
     return board_state

@@ -12,6 +12,7 @@ class Board:
 
     def __init__(self, fid_to_piece_map, a1_position, h1_position, a8_position, h8_position):
         self.fid_to_piece_map = fid_to_piece_map
+        self.piece_fids = list(fid_to_piece_map.keys())
         self.a1_position = np.array(a1_position)
         self.h1_position = np.array(h1_position)
         self.a8_position = np.array(a8_position)
