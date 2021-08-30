@@ -226,8 +226,8 @@ def play_game():
         wait_for_player_button_press()
         board_state = get_board_state()
         previous_state = state_history[-1]
-        log.debug(f"Previous state: {previous_state}")
-        log.debug(f"Board state: {board_state}")
+        log.debug(f"Previous state: {Board.board_state_to_fen(previous_state)}")
+        log.debug(f"Board state: {Board.board_state_to_fen(board_state)}")
         try:
             detected_move = Board.get_move_from_board_states(previous_state, board_state)
         except InvalidMove:
@@ -238,7 +238,7 @@ def play_game():
         moves.append(detected_move)
         log.debug(f"Moves: {moves}")
         stockfish.set_position(moves)
-        log.debug(stockfish.get_fen_position())
+        log.debug(f"Making move from current board:\n{stockfish.get_board_visual()}")
         generated_move = stockfish.get_best_move_time(2)
         if generated_move is None:
             break
