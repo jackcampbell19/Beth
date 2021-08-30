@@ -7,6 +7,12 @@
     "4": "n",
     "6": "p"
   },
+  "game-options":{
+    "180": "level-advanced",
+    "181": "level-medium",
+    "182": "level-easy",
+    "183": "level-hard"
+  },
   "fid-correction-coefficients": {
   },
   "camera": {

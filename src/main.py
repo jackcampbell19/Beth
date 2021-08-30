@@ -49,6 +49,7 @@ key_positions = [
     for kp in config['key-positions']
 ]
 z_axis_extension = config['z-axis-piece-extension']
+game_options_map = config['game-options']
 # Init the camera
 camera = Camera(
     camera_index=0,
@@ -186,7 +187,7 @@ def verify_initial_state():
     pass
 
 
-def wait_for_player_turn():
+def wait_for_player_button_press():
     # TODO: replace with proper button
     gantry.x_stop.wait_until_pressed()
 
@@ -196,8 +197,12 @@ def play_game():
     moves = []
     stockfish = generate_stockfish_instance()
     verify_initial_state()
+    play_audio_ids([
+        AUDIO_IDS.BEFORE_GAME,
+        AUDIO_IDS.GOOD_LUCK
+    ])
     while True:
-        wait_for_player_turn()
+        wait_for_player_button_press()
         board_state = get_board_state()
         previous_state = state_history[-1]
         try:
@@ -212,6 +217,27 @@ def play_game():
         if generated_move is None:
             break
         make_move(generated_move, board_state)
+
+
+def check_for_game_options():
+    x, y = key_positions[0].gantry_position
+    gantry.set_position(x, y)
+    play_audio_ids(AUDIO_IDS.OPTIONS_CHECK)
+    wait_for_player_button_press()
+    frame = camera.capture_frame()
+    markers = Marker.extract_markers(frame, Marker.FAMILY_tag36h11)
+    for marker in markers:
+        if marker.id in game_options_map:
+            option = game_options_map[marker.id]
+            log.info(f"Game option found '{option}'")
+            if option == 'level-easy':
+                pass
+            elif option == 'level-medium':
+                pass
+            elif option == 'level-hard':
+                pass
+            elif option == 'level-advanced':
+                pass
 
 
 """
@@ -292,16 +318,8 @@ def exe_main():
     play_audio_ids(
         AUDIO_IDS.START_MESSAGE,
         AUDIO_IDS.PAUSE_HALF_SECOND,
-        AUDIO_IDS.WAKEUP,
-        AUDIO_IDS.CALIBRATION_0
+        AUDIO_IDS.WAKEUP
     )
-    # Wait for stops to be pressed
-    gantry.x_stop.wait_until_pressed()
-    play_audio_ids(AUDIO_IDS.CALIBRATION_1)
-    gantry.y0_stop.wait_until_pressed()
-    play_audio_ids(AUDIO_IDS.CALIBRATION_2)
-    gantry.y1_stop.wait_until_pressed()
-    play_audio_ids(AUDIO_IDS.CALIBRATION_3)
     # Perform mechanical calibration
     log.info('Performing gantry calibration.')
     _ = gantry.calibrate()
@@ -315,6 +333,7 @@ def exe_main():
     )
     # Start playing sequence
     while True:
+        check_for_game_options()
         play_game()
 
 
@@ -343,9 +362,6 @@ if __name__ == "__main__":
             calculate_fid_correction_coefficients(camera.frame_center)
         elif '--determine-current-position' in argv:
             exe_determine_current_position()
-        elif '--play-audio' in argv:
-            i = argv.index('--play-audio') + 1
-            play_audio_ids(*argv[i].split(' '))
         elif '--make-move' in argv:
             gantry.calibrate()
             i = argv.index('--make-move') + 1
@@ -363,35 +379,22 @@ if __name__ == "__main__":
             state = get_board_state(save_images=True)
             s = generate_stockfish_instance()
             s.set_fen_position(Board.board_state_to_fen(state))
-            print(s.get_board_visual())
+            log.info('Board state:\n' + s.get_board_visual())
         elif '--capture-frame' in argv:
             frame = camera.capture_frame(correct_distortion='--raw-image' not in argv)
-            name = None
-            if '--b5' in argv:
-                frame = Camera.blur_frame(frame, 5)
-                name = 'b5'
-            if '--b3' in argv:
-                frame = Camera.blur_frame(frame, 3)
-                name = 'b3'
             if '--show-markers' in argv:
-                markers = Marker.extract_markers(frame, marker_family=Marker.FAMILY_tag36h11 if '--36h11' in argv else Marker.FAMILY_tag16h5)
+                tag = Marker.FAMILY_tag36h11 if '--36h11' in argv else Marker.FAMILY_tag16h5
+                markers = Marker.extract_markers(frame, marker_family=tag)
                 draw_markers(frame, markers, point_only=True, primary_color=(255, 0, 0), secondary_color=(255, 0, 0))
                 adjust_markers(markers)
                 draw_markers(frame, markers, point_only=True, primary_color=(0, 255, 0), secondary_color=(0, 255, 0))
-            save_frame_to_runtime_dir(frame, camera, name=name)
+            save_frame_to_runtime_dir(frame, camera)
         elif '--capture-camera-distortion-images' in argv:
             for i in range(12):
-                gantry.set_z_position(30)
+                gantry.set_z_position(0.3)
                 gantry.set_z_position(0)
                 frame = camera.capture_frame(correct_distortion=False)
                 save_frame_to_runtime_dir(frame, camera, calibration=True, name=f"cam-dis-{i}")
-        elif '--test-exposure' in argv:
-            for x in [0.0005, 0.001, 0.002, 0.003, 0.004, 0.005, 0.006]:
-                f = camera.capture_frame(exposure=x)
-                save_frame_to_runtime_dir(f, camera, name=x)
-                m = Marker.extract_markers(f, marker_family=Marker.FAMILY_tag16h5)
-                draw_markers(f, m)
-                save_frame_to_runtime_dir(f, camera, name=f"{x}-markers")
         else:
             exe_main()
     except KeyboardInterrupt:
