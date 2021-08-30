@@ -382,6 +382,7 @@ if __name__ == "__main__":
             log.info('Board state:\n' + s.get_board_visual())
         elif '--capture-frame' in argv:
             frame = camera.capture_frame(correct_distortion='--raw-image' not in argv)
+            frame = Camera.invert_colors(frame)
             if '--show-markers' in argv:
                 tag = Marker.FAMILY_tag36h11 if '--36h11' in argv else Marker.FAMILY_tag16h5
                 markers = Marker.extract_markers(frame, marker_family=tag)

@@ -104,3 +104,7 @@ class Camera:
     @staticmethod
     def blur_frame(frame, amount):
         return cv2.blur(frame, (amount, amount))
+
+    @staticmethod
+    def invert_colors(frame):
+        return cv2.invert(frame)
