@@ -71,7 +71,7 @@ class Camera:
 
     def capture_frame(self, correct_distortion=True, exposure=None):
         """
-        Captures a raw BGR color frame from the camera. Corrects distortion if necessary.
+        Captures a raw RGB color frame from the camera. Corrects distortion if necessary.
         :param correct_distortion: Tell the function if it should correct for distortion.
         :param exposure: Exposure to capture.
         :return: np array of pixel data
@@ -92,6 +92,7 @@ class Camera:
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         if correct_distortion:
             frame = self.correct_distortion(frame)
+        frame = Camera.blur_frame(frame, 5)
         self.latest_frame = frame
         return frame
 
@@ -100,3 +101,7 @@ class Camera:
         if not 1 <= contrast <= 3:
             log.error(f"Contrast must be between 1 and 3. Provided {contrast}")
         return cv2.convertScaleAbs(frame, alpha=contrast, beta=brightness)
+
+    @staticmethod
+    def blur_frame(frame, amount):
+        return cv2.blur(frame, (amount, amount))
