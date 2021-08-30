@@ -12,7 +12,7 @@ class Camera:
     class does additional computation when reading frames and initializing.
     """
 
-    def __init__(self, camera_index, frame_size, k, d):
+    def __init__(self, camera_index, frame_size, k, d, frame_center=None):
         """
         Initializes the {Camera} object.
         :param camera_index: The index of the camera to read from.
@@ -26,7 +26,10 @@ class Camera:
         self.d = np.array(d)
         self.mock_frame_path = None
         self.latest_frame = None
-        self.frame_center = np.array([self.frame_size[0] / 2, self.frame_size[1] / 2])
+        if frame_center is None:
+            self.frame_center = np.array([self.frame_size[0] / 2, self.frame_size[1] / 2])
+        else:
+            self.frame_center = np.array(frame_center)
         self.exposure = None
 
     def generate_camera(self, exposure=None):

@@ -56,7 +56,8 @@ camera = Camera(
     camera_index=0,
     frame_size=[config['camera']['width'], config['camera']['height']],
     k=config['camera']['calibration']['k'],
-    d=config['camera']['calibration']['d']
+    d=config['camera']['calibration']['d'],
+    frame_center=[982, 543]
 )
 # Init the board
 board = Board(
@@ -357,7 +358,7 @@ if __name__ == "__main__":
         elif '--capture-fcc-base' in argv:
             exe_capture_calibration_image('fcc-base')
         elif '--calculate-fcc' in argv:
-            calculate_fid_correction_coefficients(np.array([982, 543]))
+            calculate_fid_correction_coefficients(camera.frame_center)
         elif '--determine-current-position' in argv:
             exe_determine_current_position()
         elif '--make-move' in argv:
