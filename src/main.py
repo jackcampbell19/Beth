@@ -432,6 +432,17 @@ if __name__ == "__main__":
                 gantry.set_z_position(0)
                 frame = camera.capture_frame(correct_distortion=False)
                 save_frame_to_runtime_dir(frame, camera, calibration=True, name=f"cam-dis-{i}")
+        elif '--play-self' in argv:
+            moves = []
+            stockfish = generate_stockfish_instance()
+            while True:
+                stockfish.set_position(moves)
+                move = stockfish.get_best_move_time(1)
+                if move is None:
+                    break
+                log.info(f"Making move: {move}")
+                make_move(move, board_state=Board.fen_to_board_state(stockfish.get_fen_position()))
+                moves.append(move)
         else:
             exe_main()
     except KeyboardInterrupt:
