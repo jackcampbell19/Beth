@@ -254,6 +254,7 @@ def play_game():
 
 
 def check_for_game_options():
+    return
     x, y = key_positions[0].gantry_position
     gantry.set_position(x, y)
     play_audio_ids(AUDIO_IDS.OPTIONS_CHECK)
