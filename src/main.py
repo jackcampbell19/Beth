@@ -433,6 +433,7 @@ if __name__ == "__main__":
                 frame = camera.capture_frame(correct_distortion=False)
                 save_frame_to_runtime_dir(frame, camera, calibration=True, name=f"cam-dis-{i}")
         elif '--play-self' in argv:
+            _ = gantry.calibrate()
             moves = []
             stockfish = generate_stockfish_instance()
             while True:
