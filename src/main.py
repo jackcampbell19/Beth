@@ -225,7 +225,7 @@ def play_game():
     while True:
         log.info('Waiting for player move')
         wait_for_player_button_press()
-        board_state = get_board_state()
+        board_state = get_board_state(save_images=True)
         previous_state = state_history[-1]
         log.debug(f"Previous state: {Board.board_state_to_fen(previous_state)}")
         log.debug(f"Board state: {Board.board_state_to_fen(board_state)}")
