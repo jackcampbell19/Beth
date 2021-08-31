@@ -368,6 +368,7 @@ def exe_main():
     )
     # Start playing sequence
     while True:
+        gantry.set_position(200, 200)
         check_for_game_options()
         play_game()
 
