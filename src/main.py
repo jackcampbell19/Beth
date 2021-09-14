@@ -262,7 +262,7 @@ def play_game():
         log.info(f"Detected move {detected_move} from player")
         state_history.append(board_state)
         moves.append(detected_move)
-        log.debug(f"Previous moves: {moves}")
+        log.debug(f"Previous moves: {','.join(moves)}")
         # Update the chess engine with the latest moves
         stockfish.set_position(moves)
         log.debug(f"Making move from current board:\n{stockfish.get_board_visual()}{stockfish.get_fen_position()}")
