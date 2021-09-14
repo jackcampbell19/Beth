@@ -214,22 +214,42 @@ def wait_for_player_button_press():
 
 
 def play_game():
+    """
+    Game play logic.
+    """
+    # Initialize state history, move list, and chess engine. Then verify the board is in starting position.
     state_history = [Board.fen_to_board_state('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR')]
     moves = []
     stockfish = generate_stockfish_instance()
     verify_initial_state()
+    # Begin the game
     play_audio_ids([
         AUDIO_IDS.BEFORE_GAME,
         AUDIO_IDS.GOOD_LUCK
     ])
+    best_player_move = None
     while True:
         log.info('Waiting for player move')
         wait_for_player_button_press()
-        try:
-            board_state = get_board_state(save_images=True)
-        except BoardPieceViolation:
-            log.info("Retrying board analysis")
-            board_state = get_board_state(save_images=True)
+        # Analyze the board to get the board state. If it fails, retry once before asking for the user
+        # to intervene. Repeat until board state can be captured.
+        attempts = 0
+        should_request_user_intervention = False
+        while True:
+            attempts += 1
+            if should_request_user_intervention:
+                should_request_user_intervention = False
+                play_audio_ids(AUDIO_IDS.USER_CHECK_BOARD)
+                log.info('Requesting user intervention.')
+                wait_for_player_button_press()
+            try:
+                board_state = get_board_state(save_images=True)
+                break
+            except BoardPieceViolation as error:
+                log.error(error)
+                if attempts % 2 == 0:
+                    should_request_user_intervention = True
+        # Get previous state in order to extract the move made by the player and add it to the move list
         previous_state = state_history[-1]
         log.debug(f"Previous state: {Board.board_state_to_fen(previous_state)}")
         log.debug(f"Board state: {Board.board_state_to_fen(board_state)}")
@@ -237,20 +257,31 @@ def play_game():
             detected_move = Board.get_move_from_board_states(previous_state, board_state)
         except InvalidMove:
             log.error('Invalid move detected.')
+            play_audio_ids(AUDIO_IDS.INVALID_MOVE)
             continue
         log.info(f"Detected move {detected_move} from player")
         state_history.append(board_state)
         moves.append(detected_move)
         log.debug(f"Previous moves: {moves}")
+        # Update the chess engine with the latest moves
         stockfish.set_position(moves)
         log.debug(f"Making move from current board:\n{stockfish.get_board_visual()}{stockfish.get_fen_position()}")
+        # Generate the best move, append it to the moves list
         generated_move = stockfish.get_best_move_time(2)
         if generated_move is None:
+            play_audio_ids(AUDIO_IDS.LOST)
+            log.info('Player won.')
             break
         moves.append(generated_move)
         log.info(f"Moves: {moves}")
         stockfish.set_position(moves)
         state_history.append(Board.fen_to_board_state(stockfish.get_fen_position()))
+        # Generate the best move for the player to take next
+        best_player_move = stockfish.get_best_move_time(1)
+        if best_player_move is None:
+            play_audio_ids(AUDIO_IDS.WON)
+            break
+        # Make the move
         log.info(f"Making move {generated_move}")
         make_move(generated_move, board_state)
         x, y = key_positions[0].gantry_position

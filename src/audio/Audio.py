@@ -26,6 +26,10 @@ class AUDIO_IDS:
     BEFORE_GAME = 'before-game'
     GOOD_LUCK = 'good-luck'
     OPTIONS_CHECK = 'options-check'
+    USER_CHECK_BOARD = 'user-check-board'
+    INVALID_MOVE = 'invalid-move'
+    LOST = 'lost'
+    WON = 'won'
 
 
 
@@ -37,7 +41,11 @@ AudioMessages = {
     AUDIO_IDS.HAHA: 'ha. ha. ha',
     AUDIO_IDS.BEFORE_GAME: 'Press the button when you have made your move.',
     AUDIO_IDS.GOOD_LUCK: 'Good luck, and don\'t fuck it up.',
-    AUDIO_IDS.OPTIONS_CHECK: 'Place options cards in the center of the board to set game options. Press the button to continue.'
+    AUDIO_IDS.OPTIONS_CHECK: 'Place options cards in the center of the board to set game options. Press the button to continue.',
+    AUDIO_IDS.USER_CHECK_BOARD: 'I am having a hard time analyzing the board. Please clean it up and then press your button.',
+    AUDIO_IDS.INVALID_MOVE: 'Invalid move detected, please make a different move.',
+    AUDIO_IDS.LOST: 'Congratulations, you have won.',
+    AUDIO_IDS.WON: 'Checkmate, I have won!'
 }
 
 for letter in 'abcdefgh':
