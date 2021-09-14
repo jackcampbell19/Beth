@@ -82,17 +82,18 @@ class Electromagnet:
 
 class Servo:
 
-    def __init__(self, sig_pin):
+    def __init__(self, sig_pin, default_delay=1.5):
         gpio.setup(sig_pin, gpio.OUT)
         self.pin = sig_pin
         self.pwm = gpio.PWM(sig_pin, 50)
         self.pwm.start(0)
+        self.default_delay = default_delay
 
     def set_angle(self, deg):
         duty = deg / 18 + 2
         p_out(self.pin, True)
         self.pwm.ChangeDutyCycle(duty)
-        time.sleep(0.75)
+        time.sleep(self.default_delay)
 
     def cleanup(self):
         self.pwm.stop()
