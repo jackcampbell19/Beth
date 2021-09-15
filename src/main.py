@@ -1,5 +1,6 @@
 import pathlib
 import json
+import os
 from sys import argv, path
 
 src = pathlib.Path(__file__).parent.absolute()
@@ -459,6 +460,12 @@ Execute main function.
 
 if __name__ == "__main__":
     log.enable_save_output(path=LOG_DIR)
+    try:
+        ip = os.popen('hostname -I').readlines()[0].split()[0]
+    except IndexError:
+        ip = 'NULL'
+    log.info(f"SSH IP: {ip}")
+    log.debug(f"Download runtime dir using: scp -r pi@{ip}:/home/pi/projects/beth/runtime .")
     cleanup_runtime_dir()
     log.info(f"Program begin, argv: {argv}")
     try:
