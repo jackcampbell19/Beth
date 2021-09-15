@@ -53,6 +53,8 @@ key_positions = [
 ]
 z_axis_extension = config['z-axis-piece-extension']
 rest_extension = z_axis_extension['rest']
+min_extension = z_axis_extension['min']
+max_extension = z_axis_extension['max']
 game_options_map = config['game-options']
 # Init the camera
 camera = Camera(
@@ -121,16 +123,16 @@ def make_move(move, board_state):
         gantry.set_position(ex, ey)
         gantry.set_z_position(extension_amount)
         gantry.engage_grip()
-        gantry.set_z_position(0)
+        gantry.set_z_position(min_extension)
         gantry.set_position(100, 100)
-        gantry.set_z_position(1)
+        gantry.set_z_position(max_extension)
         gantry.release_grip()
         gantry.set_z_position(rest_extension)
     gantry.set_position(sx, sy)
     extension_amount = get_extension_amount(board_state[s])
     gantry.set_z_position(extension_amount)
     gantry.engage_grip()
-    gantry.set_z_position(0)
+    gantry.set_z_position(min_extension)
     gantry.set_position(ex, ey)
     gantry.set_z_position(extension_amount)
     gantry.release_grip()
@@ -361,7 +363,7 @@ def exe_remote_control():
     """
     gantry.calibrate()
     while True:
-        mode = input('Coordinate / Position (c/p): ')
+        mode = input('Coordinate / Position (c/p/z): ')
         if mode == 'c':
             while True:
                 input_str = input('x,y,z: ')
@@ -382,6 +384,12 @@ def exe_remote_control():
                     break
                 x, y = board.get_square_location(position)
                 gantry.set_position(x, y)
+        elif mode == 'z':
+            while True:
+                position = float(input('%: '))
+                if position == 'back':
+                    break
+                gantry.set_z_position(position)
         else:
             print('Inout not valid.')
 
