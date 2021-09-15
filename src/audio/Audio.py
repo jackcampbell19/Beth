@@ -30,6 +30,7 @@ class AUDIO_IDS:
     INVALID_MOVE = 'invalid-move'
     LOST = 'lost'
     WON = 'won'
+    DING = 'ding-1'
 
 
 
