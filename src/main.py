@@ -386,7 +386,7 @@ def exe_remote_control():
                 gantry.set_position(x, y)
         elif mode == 'z':
             while True:
-                position = float(input('%: '))
+                position = float(input('%: ')) / 100
                 if position == 'back':
                     break
                 gantry.set_z_position(position)
