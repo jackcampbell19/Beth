@@ -52,6 +52,7 @@ key_positions = [
     for kp in config['key-positions']
 ]
 z_axis_extension = config['z-axis-piece-extension']
+rest_extension = z_axis_extension['rest']
 game_options_map = config['game-options']
 # Init the camera
 camera = Camera(
@@ -124,7 +125,7 @@ def make_move(move, board_state):
         gantry.set_position(100, 100)
         gantry.set_z_position(1)
         gantry.release_grip()
-        gantry.set_z_position(0)
+        gantry.set_z_position(rest_extension)
     gantry.set_position(sx, sy)
     extension_amount = get_extension_amount(board_state[s])
     gantry.set_z_position(extension_amount)
@@ -133,7 +134,7 @@ def make_move(move, board_state):
     gantry.set_position(ex, ey)
     gantry.set_z_position(extension_amount)
     gantry.release_grip()
-    gantry.set_z_position(0)
+    gantry.set_z_position(rest_extension)
 
 
 def adjust_markers(markers):
@@ -273,7 +274,7 @@ def play_game():
             log.info('Player won.')
             break
         moves.append(generated_move)
-        log.info(f"Moves: {moves}")
+        log.info(f"Moves: {','.join(moves)}")
         stockfish.set_position(moves)
         state_history.append(Board.fen_to_board_state(stockfish.get_fen_position()))
         # Generate the best move for the player to take next
