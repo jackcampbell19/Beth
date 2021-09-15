@@ -127,7 +127,7 @@ def make_move(move, board_state):
         gantry.set_position(100, 100)
         gantry.set_z_position(max_extension)
         gantry.release_grip()
-        gantry.set_z_position(rest_extension)
+        gantry.set_z_position(min_extension)
     gantry.set_position(sx, sy)
     extension_amount = get_extension_amount(board_state[s])
     gantry.set_z_position(extension_amount)
@@ -136,7 +136,7 @@ def make_move(move, board_state):
     gantry.set_position(ex, ey)
     gantry.set_z_position(extension_amount)
     gantry.release_grip()
-    gantry.set_z_position(rest_extension)
+    gantry.set_z_position(min_extension)
 
 
 def adjust_markers(markers):
