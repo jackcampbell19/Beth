@@ -21,18 +21,6 @@ from stockfish import Stockfish
 
 
 """
-Print out the help message if requested and terminate the program.
-"""
-if '--help' in argv:
-    readme = open(str(src.parent.joinpath('README.md').absolute()))
-    print('Flags:')
-    for line in readme.readlines():
-        if line.startswith('#### `--'):
-            print('  • ', line[6:-2])
-    exit(0)
-
-
-"""
 Initialize global objects/variables using the config file.
 """
 log.info('Initializing components.')
@@ -350,15 +338,15 @@ def check_for_game_options():
 
 
 """
-Define exe function.
+Define action functions.
 """
 
 
-def exe_capture_calibration_image(name):
+def action_capture_calibration_image(name):
     save_frame_to_runtime_dir(camera.capture_frame(), calibration=True, name=name, name_only=True)
 
 
-def exe_remote_control():
+def action_remote_control():
     """
     Allows the user to control the machine from a terminal.
     """
@@ -395,7 +383,7 @@ def exe_remote_control():
             print('Inout not valid.')
 
 
-def exe_capture_key_position_images():
+def action_capture_key_position_images():
     """
     Captures the key position and returns positional data from the calibration grid.
     """
@@ -420,7 +408,7 @@ def exe_capture_key_position_images():
     gantry.set_position(0, 0)
 
 
-def exe_determine_current_position():
+def action_determine_current_position():
     """
     Logs the current position of the gantry.
     """
@@ -428,7 +416,52 @@ def exe_determine_current_position():
     log.info(f"Gantry was at position {x}, {y}")
 
 
-def exe_main():
+def action_show_board_state():
+    gantry.calibrate()
+    state = get_board_state(save_images=True)
+    s = generate_stockfish_instance()
+    s.set_fen_position(Board.board_state_to_fen(state))
+    log.info('Board state:\n' + s.get_board_visual())
+
+
+def action_capture_frame():
+    frame = camera.capture_frame(correct_distortion='--raw-image' not in argv)
+    if '--show-markers' in argv:
+        tag = Marker.FAMILY_tag36h11 if '--36h11' in argv else Marker.FAMILY_tag16h5
+        markers = Marker.extract_markers(frame, marker_family=tag, scan_for_inverted_markers=True)
+        draw_markers(frame, markers, board=board, primary_color=(244, 3, 252), secondary_color=(252, 98, 3))
+        adjust_markers(markers)
+        draw_markers(frame, markers, point_only=True, primary_color=(107, 252, 3), secondary_color=(107, 252, 3))
+    save_frame_to_runtime_dir(frame, camera)
+
+
+def action_capture_camera_distortion_images():
+    for i in range(12):
+        frame = camera.capture_frame(correct_distortion=False)
+        save_frame_to_runtime_dir(frame, camera, calibration=True, name=f"cam-dis-{i}")
+        play_audio_ids(AUDIO_IDS.DING)
+
+
+def action_play_self():
+    _ = gantry.calibrate()
+    moves = []
+    stockfish = generate_stockfish_instance()
+    while True:
+        stockfish.set_position(moves)
+        move = stockfish.get_best_move_time(1)
+        if move is None:
+            break
+        log.info(f"Making move: {move}")
+        make_move(move, board_state=Board.fen_to_board_state(stockfish.get_fen_position()))
+        moves.append(move)
+
+
+def action_setup_board():
+    gantry.calibrate()
+    setup_board()
+
+
+def action_main():
     gantry.set_position(100, 100, rel=True, slow=True)
     play_audio_ids(
         AUDIO_IDS.START_MESSAGE,
@@ -453,12 +486,71 @@ def exe_main():
         play_game()
 
 
+# Registered actions for the machine to perform instead of main. { cli-arg : [desc, func, params] }
+registered_actions = {
+    '--remote-control': [
+        'Allows the user to control the machine.',
+        action_remote_control
+    ],
+    '--capture-key-positions': [
+        'Captures images of the configured key positions',
+        action_capture_key_position_images
+    ],
+    '--capture-fcc-top': [
+        '',
+        action_capture_calibration_image,
+        ['fcc-top']
+    ],
+    '--capture-fcc-base': [
+        '',
+        action_capture_calibration_image,
+        ['fcc-base']
+    ],
+    '--calculate-fcc': [
+        '',
+        calculate_fid_correction_coefficients,
+        [camera.frame_center]
+    ],
+    '--determine-current-position': [
+        '',
+        action_determine_current_position
+    ],
+    '--show-board-state': [
+        '',
+        action_show_board_state
+    ],
+    '--capture-frame': [
+        '',
+        action_capture_frame
+    ],
+    '--capture-camera-distortion-images': [
+        '',
+        action_capture_camera_distortion_images
+    ],
+    '--play-self': [
+        '',
+        action_play_self
+    ],
+    '--setup-board': [
+        '',
+        action_setup_board
+    ]
+}
+
 """
 Execute main function.
 """
 
 
 if __name__ == "__main__":
+
+    if '--help' in argv:
+        print('Flags:')
+        for action in registered_actions:
+            desc = registered_actions[action][0]
+            print(f"{action}\n    {desc}")
+        exit(0)
+
     log.enable_save_output(path=LOG_DIR)
     try:
         ip = os.popen('hostname -I').readlines()[0].split()[0]
@@ -469,66 +561,18 @@ if __name__ == "__main__":
     cleanup_runtime_dir()
     log.info(f"Program begin, argv: {argv}")
     try:
-        if '--remote-control' in argv:
-            exe_remote_control()
-        elif '--capture-key-positions' in argv:
-            exe_capture_key_position_images()
-        elif '--capture-fcc-top' in argv:
-            exe_capture_calibration_image('fcc-top')
-        elif '--capture-fcc-base' in argv:
-            exe_capture_calibration_image('fcc-base')
-        elif '--calculate-fcc' in argv:
-            calculate_fid_correction_coefficients(camera.frame_center)
-        elif '--determine-current-position' in argv:
-            exe_determine_current_position()
-        elif '--make-move' in argv:
-            gantry.calibrate()
-            i = argv.index('--make-move') + 1
-            move = argv[i]
-            s, e = move[:2], move[2:]
-            state_info = list(argv[i + 1])
-            state = {
-                s: state_info[0]
-            }
-            if len(state_info) == 2:
-                state[e] = state_info[1]
-            make_move(move, state)
-        elif '--get-board-state' in argv:
-            gantry.calibrate()
-            state = get_board_state(save_images=True)
-            s = generate_stockfish_instance()
-            s.set_fen_position(Board.board_state_to_fen(state))
-            log.info('Board state:\n' + s.get_board_visual())
-        elif '--capture-frame' in argv:
-            frame = camera.capture_frame(correct_distortion='--raw-image' not in argv)
-            if '--show-markers' in argv:
-                tag = Marker.FAMILY_tag36h11 if '--36h11' in argv else Marker.FAMILY_tag16h5
-                markers = Marker.extract_markers(frame, marker_family=tag, scan_for_inverted_markers=True)
-                draw_markers(frame, markers, board=board, primary_color=(244, 3, 252), secondary_color=(252, 98, 3))
-                adjust_markers(markers)
-                draw_markers(frame, markers, point_only=True, primary_color=(107, 252, 3), secondary_color=(107, 252, 3))
-            save_frame_to_runtime_dir(frame, camera)
-        elif '--capture-camera-distortion-images' in argv:
-            for i in range(12):
-                frame = camera.capture_frame(correct_distortion=False)
-                save_frame_to_runtime_dir(frame, camera, calibration=True, name=f"cam-dis-{i}")
-        elif '--play-self' in argv:
-            _ = gantry.calibrate()
-            moves = []
-            stockfish = generate_stockfish_instance()
-            while True:
-                stockfish.set_position(moves)
-                move = stockfish.get_best_move_time(1)
-                if move is None:
-                    break
-                log.info(f"Making move: {move}")
-                make_move(move, board_state=Board.fen_to_board_state(stockfish.get_fen_position()))
-                moves.append(move)
-        elif '--setup-board' in argv:
-            gantry.calibrate()
-            setup_board()
-        else:
-            exe_main()
+        run_main = True
+        for action in registered_actions:
+            if action in argv:
+                run_main = False
+                action_obj = registered_actions[action]
+                action_func = action_obj[1]
+                if len(action_obj) == 3:
+                    action_func(*action_obj[2])
+                else:
+                    action_func()
+        if run_main:
+            action_main()
     except KeyboardInterrupt:
         log.info('Program ended due to KeyboardInterrupt.')
     except Exception as e:
