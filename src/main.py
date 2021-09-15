@@ -527,8 +527,8 @@ if __name__ == "__main__":
     except Exception as e:
         log.error(f"Program execution failed. {e}")
     # Return gantry to origin and cleanup gpio
-    gantry.set_position(0, 0)
     gantry.set_z_position(min_extension)
+    gantry.set_position(0, 0)
     gantry.release_grip()
     # Close the log file
     log.close_file()
