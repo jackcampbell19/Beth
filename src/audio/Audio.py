@@ -93,13 +93,13 @@ def play_audio_ids(*ids):
             continue
         p = str(directory.joinpath(f"{i}.wav").absolute())
         log.info(f"Playing audio '{i}'")
-        try:
-            pygame.mixer.music.load(p)
-            pygame.mixer.music.play()
-            while pygame.mixer.music.get_busy():
-                continue
-        except:
-            pass
+        pygame.mixer.music.load(p)
+        log.info(f"loading")
+        pygame.mixer.music.play()
+        log.info(f"playing")
+        while pygame.mixer.music.get_busy():
+            continue
+        log.info(f"dine")
 
 
 if __name__ == '__main__':
