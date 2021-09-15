@@ -51,10 +51,10 @@ key_positions = [
     )
     for kp in config['key-positions']
 ]
-z_axis_extension = config['z-axis-piece-extension']
-rest_extension = z_axis_extension['rest']
-min_extension = z_axis_extension['min']
-max_extension = z_axis_extension['max']
+extension_values = config['z-axis-extension']
+min_extension = extension_values['min']
+max_extension = extension_values['max']
+z_axis_extension = {p: max_extension - extension_values[p] for p in 'prnbkq'}
 game_options_map = config['game-options']
 # Init the camera
 camera = Camera(
@@ -503,8 +503,6 @@ if __name__ == "__main__":
             save_frame_to_runtime_dir(frame, camera)
         elif '--capture-camera-distortion-images' in argv:
             for i in range(12):
-                gantry.set_z_position(0.3)
-                gantry.set_z_position(0)
                 frame = camera.capture_frame(correct_distortion=False)
                 save_frame_to_runtime_dir(frame, camera, calibration=True, name=f"cam-dis-{i}")
         elif '--play-self' in argv:
@@ -530,7 +528,7 @@ if __name__ == "__main__":
         log.error(f"Program execution failed. {e}")
     # Return gantry to origin and cleanup gpio
     gantry.set_position(0, 0)
-    gantry.set_z_position(0)
+    gantry.set_z_position(min_extension)
     gantry.release_grip()
     # Close the log file
     log.close_file()
