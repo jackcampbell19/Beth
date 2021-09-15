@@ -225,10 +225,10 @@ def play_game():
     stockfish = generate_stockfish_instance()
     verify_initial_state()
     # Begin the game
-    play_audio_ids([
+    play_audio_ids(
         AUDIO_IDS.BEFORE_GAME,
         AUDIO_IDS.GOOD_LUCK
-    ])
+    )
     best_player_move = None
     while True:
         log.info('Waiting for player move')
