@@ -120,6 +120,18 @@ class Board:
         move = f"{move_start}{move_end}"
         return move
 
+    @staticmethod
+    def get_starting_board_state():
+        return Board.fen_to_board_state('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR')
+
+    @staticmethod
+    def get_all_sids():
+        sids = []
+        for l in 'abcdefgh':
+            for n in range(1, 9):
+                sids.append(f"{l}{n}")
+        return sids
+
 
 class KeyPosition:
 

@@ -205,6 +205,40 @@ def get_board_state(save_images=False):
     return board_state
 
 
+def setup_board():
+    log.info('Setting up board.')
+    start_state = Board.get_starting_board_state()
+    board_state = get_board_state()
+    # For each sid, move a piece that is in an incorrect location to the correct location
+    for s_sid, s_piece in start_state.items():
+        # Get sids that do not have pieces in them
+        free_sids = [sid for sid in Board.get_all_sids() if sid not in board_state]
+        # s_piece = correct piece for s_sid, b_piece = current piece in sid
+        b_piece = board_state[s_sid] if s_sid in board_state else None
+        # If the board piece is the same as the start piece, continue
+        if b_piece == s_piece:
+            continue
+        # If there is an incorrect piece in the sid, move it to a free space
+        if b_piece is not None:
+            f_sid = free_sids.pop(0)
+            make_move(f"{s_sid}{f_sid}", board_state)
+            del board_state[s_sid]
+            board_state[f_sid] = b_piece
+        # Get sids of pieces incorrectly located
+        i_sids = [
+            sid for sid, piece in board_state.items()
+            if piece == s_piece and (sid not in start_state or start_state[sid] != piece)
+        ]
+        # If there are none on the board, continue
+        if len(i_sids) == 0:
+            continue
+        # Make the move
+        i_sid = i_sids[0]
+        make_move(f"{i_sid}{s_sid}", board_state)
+        del board_state[i_sid]
+        board_state[s_sid] = s_piece
+
+
 def verify_initial_state():
     pass
 
@@ -220,7 +254,7 @@ def play_game():
     Game play logic.
     """
     # Initialize state history, move list, and chess engine. Then verify the board is in starting position.
-    state_history = [Board.fen_to_board_state('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR')]
+    state_history = [Board.get_starting_board_state()]
     moves = []
     stockfish = generate_stockfish_instance()
     verify_initial_state()
@@ -477,6 +511,9 @@ if __name__ == "__main__":
                 log.info(f"Making move: {move}")
                 make_move(move, board_state=Board.fen_to_board_state(stockfish.get_fen_position()))
                 moves.append(move)
+        elif '--setup-board' in argv:
+            gantry.calibrate()
+            setup_board()
         else:
             exe_main()
     except KeyboardInterrupt:
