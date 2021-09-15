@@ -1,9 +1,15 @@
 import pyttsx3
 import pathlib
 import time
-from sys import argv
 
 from os import environ
+
+from sys import argv, path
+src = pathlib.Path(__file__).parent.absolute().parent.absolute()
+path.append(str(src.parent.absolute()))
+
+from src.misc.Log import log
+
 environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 
 SKIP_AUDIO = '--skip-audio' in argv
@@ -85,11 +91,15 @@ def play_audio_ids(*ids):
         elif i == AUDIO_IDS.PAUSE_SECOND:
             time.sleep(1)
             continue
-        path = str(directory.joinpath(f"{i}.wav").absolute())
-        pygame.mixer.music.load(path)
-        pygame.mixer.music.play()
-        while pygame.mixer.music.get_busy():
-            continue
+        p = str(directory.joinpath(f"{i}.wav").absolute())
+        log.info(f"Playing audio '{i}'")
+        try:
+            pygame.mixer.music.load(p)
+            pygame.mixer.music.play()
+            while pygame.mixer.music.get_busy():
+                continue
+        except:
+            pass
 
 
 if __name__ == '__main__':
