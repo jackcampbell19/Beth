@@ -136,7 +136,7 @@ def make_move(move, board_state):
     gantry.set_position(ex, ey)
     gantry.set_z_position(
         extension_amount,
-        delay=None if shortest_clear_path is None else 0.05
+        delay=None if shortest_clear_path is None else 0.5
     )
     gantry.release_grip()
     gantry.set_z_position(min_extension)
