@@ -96,7 +96,7 @@ class Gantry:
         else:
             Stepper.move(self.x_stepper, self.y0_stepper, self.y1_stepper)
 
-    def set_z_position(self, p):
+    def set_z_position(self, p, delay=None):
         """
         Sets the Z position based on the input {p}. If p == 1 the z servo will
         be fully extended, if p == 0 the z servo will be fully retracted.
@@ -108,7 +108,7 @@ class Gantry:
             delay=max(
                     self.z_delay,
                     self.z_delay * abs(self.z_position - p)
-                 )
+                 ) if delay is None else delay
         )
         self.z_position = p
 

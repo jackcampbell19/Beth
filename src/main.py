@@ -124,13 +124,20 @@ def make_move(move, board_state):
     extension_amount = get_extension_amount(board_state[s])
     gantry.set_z_position(extension_amount)
     gantry.engage_grip()
-    gantry.set_z_position(min_extension if shortest_clear_path is None else extension_amount - 0.1)
+    gantry.set_z_position(
+        min_extension if shortest_clear_path is None else extension_amount - 0.1,
+        delay=None if shortest_clear_path is None else 0.05
+    )
     if shortest_clear_path is not None:
+        log.info(f"Using shortest clear path {shortest_clear_path}")
         for sid in shortest_clear_path:
             tx, ty = board.get_square_location(sid)
             gantry.set_position(tx, ty)
     gantry.set_position(ex, ey)
-    gantry.set_z_position(extension_amount)
+    gantry.set_z_position(
+        extension_amount,
+        delay=None if shortest_clear_path is None else 0.05
+    )
     gantry.release_grip()
     gantry.set_z_position(min_extension)
 
