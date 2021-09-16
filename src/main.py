@@ -105,14 +105,17 @@ def make_move(move, board_state):
     if len(move) != 4:
         raise InvalidMove(f"{move}")
     s, e = move[:2], move[2:]
+    shortest_clear_path = get_shortest_clear_path(move, board_state)
     sx, sy = board.get_square_location(s)
     ex, ey = board.get_square_location(e)
+    # Remove captured piece from board
     if e in board_state:
         extension_amount = get_extension_amount(board_state[e])
         gantry.set_position(ex, ey)
         gantry.set_z_position(extension_amount)
         gantry.engage_grip()
         gantry.set_z_position(min_extension)
+        # TODO: have the machine place pieces in an area they can be retrieved
         gantry.set_position(100, 100)
         gantry.set_z_position(max_extension)
         gantry.release_grip()
@@ -121,7 +124,11 @@ def make_move(move, board_state):
     extension_amount = get_extension_amount(board_state[s])
     gantry.set_z_position(extension_amount)
     gantry.engage_grip()
-    gantry.set_z_position(min_extension)
+    gantry.set_z_position(min_extension if shortest_clear_path is None else extension_amount - 0.1)
+    if shortest_clear_path is not None:
+        for sid in shortest_clear_path:
+            tx, ty = board.get_square_location(sid)
+            gantry.set_position(tx, ty)
     gantry.set_position(ex, ey)
     gantry.set_z_position(extension_amount)
     gantry.release_grip()
@@ -228,6 +235,49 @@ def setup_board():
         make_move(f"{i_sid}{s_sid}", board_state)
         del board_state[i_sid]
         board_state[s_sid] = s_piece
+
+
+def refine_path(path_):
+    p = path_
+    for i in range(len(p) - 2, 0, -1):
+        b_sid, c_sid, f_sid = p[i - 1], p[i], p[i + 1]
+        b_col, b_row = list(b_sid)
+        c_col, c_row = list(c_sid)
+        f_col, f_row = list(f_sid)
+        if b_col == c_col == f_col:
+            p.pop(i)
+        if b_row == c_row == f_row:
+            p.pop(i)
+    return p
+
+
+def get_shortest_clear_path(move, board_state):
+    """
+    Returns the shortest path with no pieces in the way or None if there is not a clear path.
+    """
+    s_sid, e_sid = move[:2], move[2:]
+    explored = [s_sid]
+    paths = [[s_sid]]
+    # For a max of 16 steps
+    search_max = 16
+    while search_max > 0:
+        search_max -= 1
+        # For each path
+        for i in range(len(paths) - 1, -1, -1):
+            c_sid = paths[i][-1]
+            # If the path has reached the target, return the path
+            if c_sid == e_sid:
+                return refine_path(paths[i])
+            # Get the surrounding empty and unexplored sids
+            surrounding = [sid for sid in Board.get_surrounding_sids(c_sid)
+                           if sid not in board_state and sid not in explored]
+            # Generate new paths for each and remove the older path
+            if len(surrounding) > 0:
+                for sid in surrounding:
+                    explored.append(sid)
+                    paths.append(paths[i] + [sid])
+            paths.pop(i)
+    return None
 
 
 def verify_initial_state():
@@ -548,7 +598,7 @@ if __name__ == "__main__":
         print('Flags:')
         for action in registered_actions:
             desc = registered_actions[action][0]
-            print(f"{action}\n    {desc}")
+            print(f"{action}\n    {desc}\n")
         exit(0)
 
     log.enable_save_output(path=LOG_DIR)

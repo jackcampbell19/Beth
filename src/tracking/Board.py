@@ -132,6 +132,23 @@ class Board:
                 sids.append(f"{l}{n}")
         return sids
 
+    @staticmethod
+    def get_surrounding_sids(sid):
+        col, row = list(sid)
+        col, row = ord(col), int(row)
+        a, h = ord('a'), ord('h')
+        surrounding = []
+        if col > a:
+            surrounding.append(f"{chr(col - 1)}{row}")
+        if col < h:
+            surrounding.append(f"{chr(col + 1)}{row}")
+        if row > 1:
+            surrounding.append(f"{chr(col)}{row - 1}")
+        if row < 8:
+            surrounding.append(f"{chr(col)}{row + 1}")
+        return surrounding
+
+
 
 class KeyPosition:
 

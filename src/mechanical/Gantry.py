@@ -23,7 +23,7 @@ class Gantry:
         self.x_stepper = Stepper(stp_pin=x_stp, dir_pin=x_dir)
         self.y0_stepper = Stepper(stp_pin=y0_stp, dir_pin=y0_dir)
         self.y1_stepper = Stepper(stp_pin=y1_stp, dir_pin=y1_dir)
-        self.z_servo = Servo(sig_pin=z_sig_pin, default_delay=1.25)
+        self.z_servo = Servo(sig_pin=z_sig_pin, default_delay=1.3)
         self.gripper = Electromagnet(sig_pin=grip_sig_pin)
         self.x_stop = Button(pin=x_stop_pin)
         self.y0_stop = Button(pin=y0_stop_pin)
