@@ -94,7 +94,7 @@ class Servo:
         duty = deg / 18 + 2
         p_out(self.pin, True)
         self.pwm.ChangeDutyCycle(duty)
-        log.info(f"sleep {self.default_delay * abs(self.current_deg - deg}"))
+        log.info(f"sleep {self.default_delay * abs(self.current_deg - deg)}")
         time.sleep(self.default_delay * abs(self.current_deg - deg))
         self.current_deg = deg
 
