@@ -269,9 +269,6 @@ def get_shortest_clear_path(move, board_state):
     search_max = 16
     while search_max > 0:
         search_max -= 1
-        print(search_max)
-        print(paths)
-        print(explored)
         # For each path
         for i in range(len(paths) - 1, -1, -1):
             c_sid = paths[i][-1]
