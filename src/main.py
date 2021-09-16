@@ -280,7 +280,7 @@ def get_shortest_clear_path(move, board_state):
                 return refine_path(paths[i])
             # Get the surrounding empty and unexplored sids
             surrounding = [sid for sid in Board.get_surrounding_sids(c_sid)
-                           if sid not in board_state and sid not in explored]
+                           if (sid not in board_state or sid == e_sid) and sid not in explored]
             # Generate new paths for each and remove the older path
             if len(surrounding) > 0:
                 for sid in surrounding:
