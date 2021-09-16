@@ -23,11 +23,13 @@ class Gantry:
         self.x_stepper = Stepper(stp_pin=x_stp, dir_pin=x_dir)
         self.y0_stepper = Stepper(stp_pin=y0_stp, dir_pin=y0_dir)
         self.y1_stepper = Stepper(stp_pin=y1_stp, dir_pin=y1_dir)
-        self.z_servo = Servo(sig_pin=z_sig_pin, default_delay=1.3)
+        self.z_delay = 1.3
+        self.z_servo = Servo(sig_pin=z_sig_pin, default_delay=self.z_delay)
         self.gripper = Electromagnet(sig_pin=grip_sig_pin)
         self.x_stop = Button(pin=x_stop_pin)
         self.y0_stop = Button(pin=y0_stop_pin)
         self.y1_stop = Button(pin=y1_stop_pin)
+        self.z_position = 0
 
     def calibrate(self, test_size=False):
         """
@@ -101,7 +103,14 @@ class Gantry:
         """
         p = max(0, min(p, 1))
         log.info(f"Setting z to {int(p * 100)}% extension.")
-        self.z_servo.set_angle(180 * (1 - p))
+        self.z_servo.set_angle(
+            180 * (1 - p),
+            delay=max(
+                    self.z_delay,
+                    self.z_delay * abs(self.z_position - p)
+                 )
+        )
+        self.z_position = p
 
     def engage_grip(self):
         log.info('Engaging grip.')
