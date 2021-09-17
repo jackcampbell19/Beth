@@ -262,30 +262,45 @@ def get_shortest_clear_path(move, board_state):
     """
     Returns the shortest path with no pieces in the way or None if there is not a clear path.
     """
+    log.info('Searching for a clear path.')
     s_sid, e_sid = move[:2], move[2:]
     explored = [s_sid]
     paths = [[s_sid]]
-    # For a max of 16 steps
-    search_max = 16
+    # For a max of 14 steps
+    search_max = 14
     while search_max > 0:
         search_max -= 1
         # For each path
         for i in range(len(paths) - 1, -1, -1):
             c_sid = paths[i][-1]
-            # If the path has reached the target, return the path
+            # If the path has reached the target, skip over the path
             if c_sid == e_sid:
-                return refine_path(paths[i])
+                continue
             # Get the surrounding empty and unexplored sids
-            surrounding = [sid for sid in Board.get_surrounding_sids(c_sid)
+            surrounding = [sid for sid in board.get_surrounding_sids(c_sid)
                            if (sid not in board_state or sid == e_sid) and sid not in explored]
             # Generate new paths for each and remove the older path
             if len(surrounding) > 0:
                 for sid in surrounding:
-                    explored.append(sid)
+                    sid_distance = np.linalg.norm(
+                        np.array(board.get_square_location(sid)) - np.array(board.get_square_location(e_sid))
+                    )
+                    c_sid_distance = np.linalg.norm(
+                        np.array(board.get_square_location(c_sid)) - np.array(board.get_square_location(e_sid))
+                    )
+                    # Mark sid as explored if it is further away from the target than the current sid
+                    # This is done to reduce jagged paths by allowing alternate equal length routes
+                    if sid_distance > c_sid_distance:
+                        explored.append(sid)
                     paths.append(paths[i] + [sid])
             paths.pop(i)
-    log.info('Could not find shortest clear path.')
-    return None
+    refined_paths = [refine_path(p) for p in paths if p[-1] == e_sid]
+    if len(refined_paths) == 0:
+        log.info('Could not find a clear path.')
+        return None
+    clear_path = sorted(refined_paths, key=lambda x: len(x)).pop(0)
+    log.info(f"Found clear path {clear_path}")
+    return clear_path
 
 
 def verify_initial_state():

@@ -33,9 +33,9 @@ class Board:
             tx = self.a8_position + (self.h8_position - self.a8_position) * (1 / 7 * col)
             bx = self.a1_position + (self.h1_position - self.a1_position) * (1 / 7 * col)
             x, y = bx + (tx - bx) * (1 / 7 * row)
-            return int(x), int(y)
+            return [int(x), int(y)]
         log.error(f"Square ID \"{sid}\" is out of bounds. Returning (0, 0).")
-        return 0, 0
+        return [0, 0]
 
     @staticmethod
     def board_state_to_fen(square_ids):
