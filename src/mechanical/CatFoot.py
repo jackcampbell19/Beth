@@ -86,14 +86,20 @@ class Servo:
         gpio.setup(sig_pin, gpio.OUT)
         self.pin = sig_pin
         self.pwm = gpio.PWM(sig_pin, 50)
-        self.pwm.start(0)
         self.default_delay = default_delay
+        self.enable()
 
     def set_angle(self, deg, delay=None):
         duty = deg / 18 + 2
         p_out(self.pin, True)
         self.pwm.ChangeDutyCycle(duty)
         time.sleep(delay if delay is not None else self.default_delay)
+
+    def disable(self):
+        self.cleanup()
+
+    def enable(self):
+        self.pwm.start(0)
 
     def cleanup(self):
         self.pwm.stop()

@@ -109,6 +109,7 @@ def make_move(move, board_state):
     sx, sy = board.get_square_location(s)
     ex, ey = board.get_square_location(e)
     # Remove captured piece from board
+    gantry.z_servo.enable()
     if e in board_state:
         extension_amount = get_extension_amount(board_state[e])
         gantry.set_position(ex, ey)
@@ -140,6 +141,7 @@ def make_move(move, board_state):
     )
     gantry.release_grip()
     gantry.set_z_position(min_extension)
+    gantry.z_servo.disable()
 
 
 def adjust_markers(markers):
