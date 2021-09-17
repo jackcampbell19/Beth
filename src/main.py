@@ -102,8 +102,9 @@ def get_extension_amount(piece):
 
 
 def make_move(move, board_state):
+    # TODO: castling, pawn promotion
     if len(move) != 4:
-        raise InvalidMove(f"{move}")
+        raise InvalidMove(f"Invalid move {move}")
     s, e = move[:2], move[2:]
     shortest_clear_path = get_shortest_clear_path(move, board_state)
     sx, sy = board.get_square_location(s)
@@ -299,6 +300,9 @@ def get_shortest_clear_path(move, board_state):
         log.info('Could not find a clear path.')
         return None
     clear_path = sorted(refined_paths, key=lambda x: len(x)).pop(0)
+    # If path has too many turns, return None
+    if len(clear_path) > 3:
+        return None
     log.info(f"Found clear path {clear_path}")
     return clear_path
 
@@ -383,6 +387,7 @@ def play_game():
             break
         # Make the move
         log.info(f"Making move {generated_move}")
+        # TODO: add try catch here
         make_move(generated_move, board_state)
         x, y = key_positions[0].gantry_position
         gantry.set_position(x, y)
@@ -649,7 +654,7 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         log.info('Program ended due to KeyboardInterrupt.')
     except Exception as e:
-        log.error(f"Program execution failed. {e}")
+        log.error(f"Program execution failed. Catchall found error: {e}")
     # Return gantry to origin and cleanup gpio
     gantry.set_z_position(min_extension)
     gantry.set_position(0, 0)
