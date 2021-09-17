@@ -539,6 +539,15 @@ def action_setup_board():
     setup_board()
 
 
+def action_replay(seq):
+    board_state = Board.get_starting_board_state()
+    for move in seq.split(','):
+        s, e = move[:2], move[2:]
+        make_move(move, board_state)
+        board_state[e] = board_state[s]
+        del board_state[s]
+
+
 def action_main():
     gantry.set_position(100, 100, rel=True, slow=True)
     play_audio_ids(
@@ -612,6 +621,11 @@ registered_actions = {
     '--setup-board': [
         '',
         action_setup_board
+    ],
+    '--replay': [
+        '',
+        action_replay,
+        [argv[-1]]
     ]
 }
 
