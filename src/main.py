@@ -1,6 +1,7 @@
 import pathlib
 import json
 import os
+from random import random
 from sys import argv, path
 
 src = pathlib.Path(__file__).parent.absolute()
@@ -12,12 +13,11 @@ from src.tracking.Board import Board, KeyPosition
 from src.tracking.Marker import Marker
 from src.mechanical.Camera import Camera
 from src.mechanical.Gantry import Gantry
-from src.misc.Exceptions import BoardPieceViolation, InvalidMove
+from src.misc.Exceptions import InvalidMove, InconsistentBoardState, NoMoveFound
 from src.misc.Helpers import *
 from src.calibration.Calibration import calculate_fid_correction_coefficients
 from src.misc.Log import log
 from src.audio.Audio import play_audio_ids, AUDIO_IDS
-from stockfish import Stockfish
 
 
 """
@@ -43,7 +43,7 @@ key_positions = [
 extension_values = config['z-axis-extension']
 min_extension = extension_values['min']
 max_extension = extension_values['max']
-z_axis_extension = {p: max_extension - extension_values[p] for p in 'prnbkq'}
+z_axis_extension = {p: max_extension - extension_values[p] for p in Board.get_black_pieces()}
 game_options_map = config['game-options']
 # Init the camera
 camera = Camera(
@@ -89,10 +89,6 @@ Define main functions.
 """
 
 
-def generate_stockfish_instance():
-    return Stockfish('/home/pi/stockfish')
-
-
 def get_extension_amount(piece):
     piece = piece.lower()
     if piece in z_axis_extension:
@@ -102,16 +98,24 @@ def get_extension_amount(piece):
 
 
 def make_move(move, board_state):
+    """
+    Given a FEN move, execute the move on the board.
+    :throws: InvalidMove, InconsistentBoardState
+    """
     # TODO: castling, pawn promotion
-    if len(move) != 4:
-        raise InvalidMove(f"Invalid move {move}")
-    s, e = move[:2], move[2:]
+    # Raise exception if the move was invalid
+    if len(move) < 4 or len(move) > 5:
+        raise InvalidMove(f"{move} is invalid")
+    # Split the move into 2 sids
+    s_sid, e_sid, promotion_piece = move[:2], move[2:], None if len(move) == 4 else move[-1]
+    # Retrieve the sid positions for the gantry
+    sx, sy = board.get_square_location(s_sid)
+    ex, ey = board.get_square_location(e_sid)
+    # Search for a clear path to take
     shortest_clear_path = get_shortest_clear_path(move, board_state)
-    sx, sy = board.get_square_location(s)
-    ex, ey = board.get_square_location(e)
-    # Remove captured piece from board
-    if e in board_state:
-        extension_amount = get_extension_amount(board_state[e])
+    # If move captures a piece, remove the captured piece from the board
+    if e_sid in board_state:
+        extension_amount = get_extension_amount(board_state[e_sid])
         gantry.set_position(ex, ey)
         gantry.set_z_position(extension_amount)
         gantry.engage_grip()
@@ -121,14 +125,19 @@ def make_move(move, board_state):
         gantry.set_z_position(max_extension)
         gantry.release_grip()
         gantry.set_z_position(min_extension)
+    # Raise an exception if the board state is inconsistent with the move
+    if s_sid not in board_state:
+        raise InconsistentBoardState(f"Could not find piece in sid {s_sid}")
+    # Move the target piece to its destination
     gantry.set_position(sx, sy)
-    extension_amount = get_extension_amount(board_state[s])
+    extension_amount = get_extension_amount(board_state[s_sid])
     gantry.set_z_position(extension_amount)
     gantry.engage_grip()
     gantry.set_z_position(
         min_extension if shortest_clear_path is None else extension_amount - 0.1,
         delay=None if shortest_clear_path is None else 0.05
     )
+    # If a clear path exists, use it
     if shortest_clear_path is not None:
         log.info(f"Using shortest clear path {shortest_clear_path}")
         for sid in shortest_clear_path:
@@ -141,6 +150,12 @@ def make_move(move, board_state):
     )
     gantry.release_grip()
     gantry.set_z_position(min_extension)
+    # Ask for piece promotion
+    if promotion_piece is not None:
+        play_audio_ids(
+            AUDIO_IDS.PIECE_PROMOTION,
+            promotion_piece
+        )
 
 
 def adjust_markers(markers):
@@ -324,7 +339,7 @@ def play_game():
     # Initialize state history, move list, and chess engine. Then verify the board is in starting position.
     state_history = [Board.get_starting_board_state()]
     moves = []
-    stockfish = generate_stockfish_instance()
+    chess_engine = Board.generate_chess_engine_instance()
     verify_initial_state()
     # Begin the game
     play_audio_ids(
@@ -342,7 +357,6 @@ def play_game():
         while True:
             attempts += 1
             if should_request_user_intervention:
-                should_request_user_intervention = False
                 play_audio_ids(AUDIO_IDS.USER_CHECK_BOARD)
                 log.info('Requesting user intervention.')
                 wait_for_player_button_press()
@@ -351,44 +365,72 @@ def play_game():
                 break
             except BoardPieceViolation as error:
                 log.error(error)
-                if attempts % 2 == 0:
-                    should_request_user_intervention = True
+                should_request_user_intervention = attempts % 2 == 0
         # Get previous state in order to extract the move made by the player and add it to the move list
         previous_state = state_history[-1]
         log.debug(f"Previous state: {Board.board_state_to_fen(previous_state)}")
         log.debug(f"Board state: {Board.board_state_to_fen(board_state)}")
         try:
-            detected_move = Board.get_move_from_board_states(previous_state, board_state)
-        except InvalidMove:
-            log.error('Invalid move detected.')
+            detected_move = Board.get_move_from_board_states(previous_state, board_state, moves, chess_engine)
+        except InvalidMove as err:
+            # If an invalid move was detected, notify the payer and try again
+            log.error(f"Invalid move detected: {err}")
             play_audio_ids(AUDIO_IDS.INVALID_MOVE)
+            continue
+        except NoMoveFound:
+            # If no move was found, notify the player and try again
+            log.error('No move found.')
+            play_audio_ids(AUDIO_IDS.NO_MOVE_FOUND)
             continue
         log.info(f"Detected move {detected_move} from player")
         state_history.append(board_state)
         moves.append(detected_move)
         log.debug(f"Previous moves: {','.join(moves)}")
         # Update the chess engine with the latest moves
-        stockfish.set_position(moves)
-        log.debug(f"Making move from current board:\n{stockfish.get_board_visual()}{stockfish.get_fen_position()}")
+        chess_engine.set_position(moves)
+        log.debug(f"Making move from current board:\n{chess_engine.get_board_visual()}{chess_engine.get_fen_position()}")
         # Generate the best move, append it to the moves list
-        generated_move = stockfish.get_best_move_time(2)
+        generated_move = chess_engine.get_best_move_time(2)
+        # If the move is None, the player won
         if generated_move is None:
             play_audio_ids(AUDIO_IDS.LOST)
             log.info('Player won.')
             break
+        # If the move is a promotion, make sure that it has the reserve piece
+        if len(generated_move) == 5:
+            piece_to_promote = generated_move[-1]
+            black_pieces_on_board = ''.join([
+                board_state[sid] for sid in board_state if board_state[sid] in Board.get_black_pieces()
+            ])
+            promotion_candidates = Board.get_full_black_pieces()
+            promotion_candidates.replace('p', '')
+            promotion_candidates.replace('k', '')
+            for piece in black_pieces_on_board:
+                promotion_candidates.replace(piece, '', 1)
+            log.info(f"Promotion candidates {promotion_candidates}")
+            if piece_to_promote not in promotion_candidates:
+                if len(promotion_candidates) == 0:
+                    log.error('No promotion candidates')
+                    break
+                generated_move = generated_move[:4] + random.choice(promotion_candidates)
         moves.append(generated_move)
         log.info(f"Moves: {','.join(moves)}")
-        stockfish.set_position(moves)
-        state_history.append(Board.fen_to_board_state(stockfish.get_fen_position()))
+        chess_engine.set_position(moves)
+        state_history.append(Board.fen_to_board_state(chess_engine.get_fen_position()))
         # Generate the best move for the player to take next
-        best_player_move = stockfish.get_best_move_time(1)
+        best_player_move = chess_engine.get_best_move_time(1)
+        # Make the move TODO: handle move failure
+        log.info(f"Making move {generated_move}")
+        try:
+            make_move(generated_move, board_state)
+        except InvalidMove or InconsistentBoardState as err:
+            log.error(f"Move failed due to: {err}")
+            break
+        # If the player has no valid moves, beth wins
         if best_player_move is None:
             play_audio_ids(AUDIO_IDS.WON)
             break
-        # Make the move
-        log.info(f"Making move {generated_move}")
-        # TODO: add try catch here
-        make_move(generated_move, board_state)
+        # Reset to the key position
         x, y = key_positions[0].gantry_position
         gantry.set_position(x, y)
 
@@ -497,9 +539,9 @@ def action_determine_current_position():
 def action_show_board_state():
     gantry.calibrate()
     state = get_board_state(save_images=True)
-    s = generate_stockfish_instance()
-    s.set_fen_position(Board.board_state_to_fen(state))
-    log.info('Board state:\n' + s.get_board_visual())
+    chess_engine = Board.generate_chess_engine_instance()
+    chess_engine.set_fen_position(Board.board_state_to_fen(state))
+    log.info('Board state:\n' + chess_engine.get_board_visual())
 
 
 def action_capture_frame():
@@ -523,14 +565,14 @@ def action_capture_camera_distortion_images():
 def action_play_self():
     _ = gantry.calibrate()
     moves = []
-    stockfish = generate_stockfish_instance()
+    chess_engine = Board.generate_chess_engine_instance()
     while True:
-        stockfish.set_position(moves)
-        move = stockfish.get_best_move_time(1)
+        chess_engine.set_position(moves)
+        move = chess_engine.get_best_move_time(1)
         if move is None:
             break
         log.info(f"Making move: {move}")
-        make_move(move, board_state=Board.fen_to_board_state(stockfish.get_fen_position()))
+        make_move(move, board_state=Board.fen_to_board_state(chess_engine.get_fen_position()))
         moves.append(move)
 
 

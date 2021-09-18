@@ -37,7 +37,12 @@ class AUDIO_IDS:
     LOST = 'lost'
     WON = 'won'
     DING = 'ding-1'
-
+    NO_MOVE_FOUND = 'no-move-found'
+    PIECE_PROMOTION = 'piece-promotion'
+    QUEEN = 'q'
+    KNIGHT = 'k'
+    ROOK = 'r'
+    BISHOP = 'b'
 
 
 AudioMessages = {
@@ -50,9 +55,11 @@ AudioMessages = {
     AUDIO_IDS.GOOD_LUCK: 'Good luck, and don\'t fuck it up.',
     AUDIO_IDS.OPTIONS_CHECK: 'Place options cards in the center of the board to set game options. Press the button to continue.',
     AUDIO_IDS.USER_CHECK_BOARD: 'I am having a hard time analyzing the board. Please clean it up and then press your button.',
-    AUDIO_IDS.INVALID_MOVE: 'Invalid move detected, please make a different move.',
+    AUDIO_IDS.INVALID_MOVE: 'Invalid move detected, please verify you move or make a different move. Press the button when you are ready.',
     AUDIO_IDS.LOST: 'Congratulations, you have won.',
-    AUDIO_IDS.WON: 'Checkmate, I have won!'
+    AUDIO_IDS.WON: 'Checkmate, I have won!',
+    AUDIO_IDS.NO_MOVE_FOUND: 'I was unable to find your move, please make a move and then press the button.',
+    AUDIO_IDS.PIECE_PROMOTION: 'I am promoting this pawn. Please replace it with a'
 }
 
 for letter in 'abcdefgh':

@@ -1,8 +1,8 @@
-from src.misc.Exceptions import BoardPieceViolation
 import numpy as np
 import math
-
+from src.misc.Exceptions import BoardPieceViolation, NoMoveFound, InvalidMove
 from src.misc.Log import log
+from stockfish import Stockfish
 
 
 class Board:
@@ -20,7 +20,7 @@ class Board:
 
     def translate_fid_to_piece(self, fid):
         if fid not in self.fid_to_piece_map:
-            raise BoardPieceViolation(f"Unknown piece ({fid}) detected on board.")
+            raise BoardPieceViolation(f"Unknown piece {fid} detected on board.")
         return self.fid_to_piece_map[fid]
 
     def get_square_location(self, sid):
@@ -58,6 +58,10 @@ class Board:
         return fen
 
     @staticmethod
+    def generate_chess_engine_instance():
+        return Stockfish('/home/pi/stockfish')
+
+    @staticmethod
     def fen_to_board_state(fen):
         board_layout = fen.split()[0]
         for x in range(1, 9):
@@ -75,49 +79,71 @@ class Board:
         return square_ids
 
     @staticmethod
-    def get_move_from_fen_positions(prev_fen, curr_fen):
-        return Board.get_move_from_board_states(
-            Board.fen_to_board_state(prev_fen),
-            Board.fen_to_board_state(curr_fen)
-        )
-
-    @staticmethod
-    def get_move_from_board_states(board_state_prev, board_state_current):
+    def get_move_from_board_states(board_state_before, board_state_after, previous_moves, chess_engine: Stockfish):
+        """
+        Determine the move given the state before the move and the state after the move.
+        """
         # Determine the sids in the prev state that differ in the current state
-        changed_prev = [sid for sid in board_state_prev
-                        if sid not in board_state_current or board_state_current[sid] != board_state_prev[sid]]
+        changed_before = [sid for sid in board_state_before
+                          if sid not in board_state_after or board_state_after[sid] != board_state_before[sid]]
         # Determine the sids in the current state that differ from the prev state
-        changed_next = [sid for sid in board_state_current
-                        if sid not in board_state_prev or board_state_current[sid] != board_state_prev[sid]]
-        # If no change return null
-        if len(changed_prev) == 0:
-            return None
-        if len(changed_next) != 1:
+        changed_after = [sid for sid in board_state_after
+                         if sid not in board_state_before or board_state_after[sid] != board_state_before[sid]]
+        # Check for promoted pieces
+        promoted_piece = None
+        pieces_before = ''.join(sorted([p for p in board_state_before.values() if p in Board.get_white_pieces()]))
+        pieces_after = ''.join(sorted([p for p in board_state_after.values() if p in Board.get_white_pieces()]))
+        if pieces_before != pieces_after:
+            differing_pieces = pieces_before + pieces_after
+            for p in pieces_before:
+                if p in pieces_after:
+                    differing_pieces.replace(p, '', 2)
+            log.info(f"Found differing pieces between states: {differing_pieces}")
+            potential_piece = differing_pieces.replace('p', '')
+            if len(differing_pieces) != 2 or 'p' not in differing_pieces or len(potential_piece) != 1:
+                raise InvalidMove('Piece promotion is invalid.')
+            promoted_piece = potential_piece
+        # If no change raise exception
+        if len(changed_before) == 0 or len(changed_after) == 0:
+            raise NoMoveFound()
+        # If more than one sid was changed in the after board state this could be a castling move
+        if len(changed_after) != 1:
+            # Construct a set of all the pieces involved in the move
             pieces_moved = set(
-                [board_state_prev[k] for k in changed_prev] + [board_state_current[k] for k in changed_next]
+                [board_state_before[k] for k in changed_before] + [board_state_after[k] for k in changed_after]
             )
+            # Check if the move is a castling move
             is_castling_move = len(pieces_moved) == 2 and (
                     ('r' in pieces_moved and 'k' in pieces_moved) or ('R' in pieces_moved and 'K' in pieces_moved)
             )
             # If it is a castling move, filter out board state changes that are not related to the king
             if is_castling_move:
-                board_state_prev = {k: board_state_prev[k] for k in board_state_prev
-                                    if (board_state_prev[k] == 'k' or board_state_prev[k] == 'K')}
-                board_state_current = {k: board_state_current[k] for k in board_state_current
-                                       if (board_state_current[k] == 'k' or board_state_current[k] == 'K')}
-                changed_prev = [sid for sid in board_state_prev
-                                if sid not in board_state_current or board_state_current[sid] != board_state_prev[sid]]
-                changed_next = [sid for sid in board_state_current
-                                if sid not in board_state_prev or board_state_current[sid] != board_state_prev[sid]]
-        move_end = changed_next[0]
-        piece_moved = board_state_current[move_end]
-        move_start = None
-        for sid in changed_prev:
-            if board_state_prev[sid] == piece_moved:
-                move_start = sid
-        if move_start is None:
-            raise BoardPieceViolation('Invalid move detected. Could not find move start.')
-        move = f"{move_start}{move_end}"
+                log.info('Castling move detected.')
+                board_state_before = {k: board_state_before[k] for k in board_state_before
+                                      if (board_state_before[k] == 'k' or board_state_before[k] == 'K')}
+                board_state_after = {k: board_state_after[k] for k in board_state_after
+                                     if (board_state_after[k] == 'k' or board_state_after[k] == 'K')}
+                changed_before = [sid for sid in board_state_before
+                                  if sid not in board_state_after or board_state_after[sid] != board_state_before[sid]]
+                changed_after = [sid for sid in board_state_after
+                                 if sid not in board_state_before or board_state_after[sid] != board_state_before[sid]]
+            else:
+                raise InvalidMove('Move affected too many sids.')
+        # Get the move end sid
+        e_sid = changed_after[0]
+        piece_moved = board_state_after[e_sid] if promoted_piece is None else promoted_piece
+        # Find the move start sid
+        s_sid = None
+        for sid in changed_before:
+            if board_state_before[sid] == piece_moved:
+                s_sid = sid
+        if s_sid is None:
+            raise InvalidMove('Could not find move start.')
+        move = f"{s_sid}{e_sid}{promoted_piece if promoted_piece is not None else ''}"
+        # Verify that the move is valid
+        chess_engine.set_position(previous_moves)
+        if not chess_engine.is_move_correct(move):
+            raise InvalidMove(f"Move {move} is invalid.")
         return move
 
     @staticmethod
@@ -131,6 +157,26 @@ class Board:
             for n in range(1, 9):
                 sids.append(f"{l}{n}")
         return sids
+
+    @staticmethod
+    def get_white_pieces():
+        return 'PRNBQK'
+
+    @staticmethod
+    def get_full_white_pieces():
+        return 'PPPPPPPPRRNNBBQQK'
+
+    @staticmethod
+    def get_black_pieces():
+        return Board.get_white_pieces().lower()
+
+    @staticmethod
+    def get_full_black_pieces():
+        return Board.get_full_white_pieces().lower()
+
+    @staticmethod
+    def get_all_pieces():
+        return Board.get_white_pieces() + Board.get_black_pieces()
 
     @staticmethod
     def get_surrounding_sids(sid):
@@ -147,7 +193,6 @@ class Board:
         if row < 8:
             surrounding.append(f"{chr(col)}{row + 1}")
         return surrounding
-
 
 
 class KeyPosition:
