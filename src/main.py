@@ -582,6 +582,7 @@ def action_setup_board():
 
 
 def action_replay(seq):
+    gantry.calibrate()
     board_state = Board.get_starting_board_state()
     for move in seq.split(','):
         s, e = move[:2], move[2:]
