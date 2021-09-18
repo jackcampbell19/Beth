@@ -164,10 +164,10 @@ def make_move(move, board_state):
         nx, ny = 0, 0
         if e_sid == 'g8':
             rx, ry = board.get_square_location('h8')
-            nx, ny = board.get_square_location('c8')
+            nx, ny = board.get_square_location('f8')
         elif e_sid == 'b8':
             rx, ry = board.get_square_location('a8')
-            nx, ny = board.get_square_location('f8')
+            nx, ny = board.get_square_location('c8')
         gantry.set_position(rx, ry)
         gantry.set_z_position(get_extension_amount('r'))
         gantry.engage_grip()
