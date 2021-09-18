@@ -38,10 +38,6 @@ class AUDIO_IDS:
     WON = 'won'
     NO_MOVE_FOUND = 'no-move-found'
     PIECE_PROMOTION = 'piece-promotion'
-    QUEEN = 'q'
-    KNIGHT = 'k'
-    ROOK = 'r'
-    BISHOP = 'b'
 
 
 AudioMessages = {
@@ -59,6 +55,10 @@ AudioMessages = {
     AUDIO_IDS.WON: 'Checkmate, I have won!',
     AUDIO_IDS.NO_MOVE_FOUND: 'I was unable to find your move, please make a move and then press the button.',
     AUDIO_IDS.PIECE_PROMOTION: 'I am promoting this pawn. Please replace it with a',
+    'q': 'queen',
+    'r': 'rook',
+    'n': 'knight',
+    'b': 'bishop'
 }
 
 for letter in 'abcdefgh':

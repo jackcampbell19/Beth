@@ -107,7 +107,9 @@ def make_move(move, board_state):
     if len(move) < 4 or len(move) > 5:
         raise InvalidMove(f"{move} is invalid")
     # Split the move into 2 sids
-    s_sid, e_sid, promotion_piece = move[:2], move[2:], None if len(move) == 4 else move[-1]
+    s_sid, e_sid, promotion_piece = move[:2], move[2:4], None if len(move) == 4 else move[-1]
+    # Check is castling move
+    is_castling = s_sid == 'e8' and (e_sid == 'g8' or e_sid == 'b8') and board_state[s_sid] == 'k'
     # Retrieve the sid positions for the gantry
     sx, sy = board.get_square_location(s_sid)
     ex, ey = board.get_square_location(e_sid)
@@ -156,6 +158,24 @@ def make_move(move, board_state):
             AUDIO_IDS.PIECE_PROMOTION,
             promotion_piece
         )
+    # Perform castling if required
+    if is_castling:
+        rx, ry = 0, 0
+        nx, ny = 0, 0
+        if e_sid == 'g8':
+            rx, ry = board.get_square_location('h8')
+            nx, ny = board.get_square_location('c8')
+        elif e_sid == 'b8':
+            rx, ry = board.get_square_location('a8')
+            nx, ny = board.get_square_location('f8')
+        gantry.set_position(rx, ry)
+        gantry.set_z_position(get_extension_amount('r'))
+        gantry.engage_grip()
+        gantry.set_z_position(min_extension)
+        gantry.set_position(nx, ny)
+        gantry.set_z_position(get_extension_amount('r'))
+        gantry.release_grip()
+        gantry.set_z_position(min_extension)
 
 
 def adjust_markers(markers):
@@ -279,7 +299,7 @@ def get_shortest_clear_path(move, board_state):
     Returns the shortest path with no pieces in the way or None if there is not a clear path.
     """
     log.info('Searching for a clear path.')
-    s_sid, e_sid = move[:2], move[2:]
+    s_sid, e_sid = move[:2], move[2:4]
     explored = [s_sid]
     paths = [[s_sid]]
     # For a max of 14 steps
@@ -584,7 +604,7 @@ def action_replay(seq):
     gantry.calibrate()
     board_state = Board.get_starting_board_state()
     for move in seq.split(','):
-        s, e = move[:2], move[2:]
+        s, e = move[:2], move[2:4]
         make_move(move, board_state)
         board_state[e] = board_state[s]
         del board_state[s]
