@@ -329,7 +329,6 @@ def verify_initial_state():
 def wait_for_player_button_press():
     # TODO: replace with proper button
     gantry.x_stop.wait_until_pressed()
-    play_audio_ids(AUDIO_IDS.DING)
 
 
 def play_game():
