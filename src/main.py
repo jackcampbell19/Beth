@@ -136,7 +136,7 @@ def make_move(move, board_state):
     gantry.set_z_position(extension_amount)
     gantry.engage_grip()
     gantry.set_z_position(
-        min_extension if shortest_clear_path is None else extension_amount - 0.1,
+        min_extension if shortest_clear_path is None else extension_amount - 0.3,
         delay=None if shortest_clear_path is None else 0.05
     )
     # If a clear path exists, use it
